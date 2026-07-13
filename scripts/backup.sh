@@ -131,10 +131,7 @@ main() {
     die "Backup integrity validation failed. Archive removed."
   fi
 
-  (
-    cd "${backup_dir}"
-    sha256sum "$(basename "${BACKUP_FILE}")" >"$(basename "${checksum_file}")"
-  )
+  sha256sum "${BACKUP_FILE}" >"${checksum_file}"
   set_backup_file_permissions "${checksum_file}" "${original_user}" "${original_group}" "false"
 
   ok "Backup created: ${BACKUP_FILE}"
