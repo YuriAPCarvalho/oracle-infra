@@ -1,0 +1,22 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    ports:
+      - "127.0.0.1:3001:3001"
+
+    volumes:
+      - /opt/docker/uptime-kuma/data:/app/data
+
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: proxy
