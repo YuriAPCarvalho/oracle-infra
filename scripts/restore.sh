@@ -6,6 +6,7 @@
 #
 # Usage:
 #   ./scripts/restore.sh backups/backup-YYYYMMDD-HHMMSS.tar.gz
+#   ./scripts/restore.sh --dry-run backups/backup-YYYYMMDD-HHMMSS.tar.gz
 
 set -Eeuo pipefail
 
@@ -15,11 +16,52 @@ source "${SCRIPT_DIR}/lib/common.sh"
 trap 'on_error "$?" "$LINENO"' ERR
 
 RESTORE_TEMP_DIR=""
+DRY_RUN=false
+BACKUP_FILE=""
 
 usage() {
   cat <<'EOF'
-Usage: restore.sh <backup-file.tar.gz>
+Usage:
+  restore.sh [options] BACKUP_FILE
+
+Options:
+  --dry-run    Validate and preview restore without copying files
+  -n           Alias for --dry-run
+  -h, --help   Show this help
 EOF
+}
+
+parse_args() {
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --dry-run|-n)
+        DRY_RUN=true
+        shift
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      --)
+        shift
+        ;;
+      -*)
+        die "Unknown option: $1"
+        ;;
+      *)
+        if [[ -n "${BACKUP_FILE}" ]]; then
+          die "Only one backup file can be provided."
+        fi
+        BACKUP_FILE="$1"
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z "${BACKUP_FILE}" ]]; then
+    usage
+    exit 1
+  fi
 }
 
 tar_contains() {
@@ -38,8 +80,18 @@ sudo_cmd() {
   fi
 }
 
+validate_checksum() {
+  local backup_file="$1"
+  local checksum_file="${backup_file}.sha256"
+
+  [[ -f "${checksum_file}" ]] ||
+    die "Checksum file not found: ${checksum_file}"
+
+  sha256sum -c "${checksum_file}" >/dev/null
+  ok "SHA-256 checksum valid"
+}
+
 main() {
-  local backup_file="${1:-}"
   local temp_dir
   local answer
   local data_root
@@ -52,29 +104,34 @@ main() {
     docs
   )
 
-  [[ -n "${backup_file}" ]] || {
-    usage
-    exit 1
-  }
+  parse_args "$@"
 
-  [[ -f "${backup_file}" ]] ||
-    die "Backup file not found: ${backup_file}"
+  [[ -f "${BACKUP_FILE}" ]] ||
+    die "Backup file not found: ${BACKUP_FILE}"
 
   require_command tar
+  require_command sha256sum
   data_root="$(persistent_data_root)"
 
+  info "Validating checksum"
+  validate_checksum "${BACKUP_FILE}"
+
   info "Validating archive"
-  tar -tzf "${backup_file}" >/dev/null
+  tar -tzf "${BACKUP_FILE}" >/dev/null
+  ok "Archive is readable"
+
+  section "Archive contents"
+  tar -tzf "${BACKUP_FILE}"
 
   for project_dir in compose bootstrap scripts docs; do
-    tar_contains "${backup_file}" "${project_dir}" ||
+    tar_contains "${BACKUP_FILE}" "${project_dir}" ||
       die "Invalid backup: missing ${project_dir}/"
   done
 
   temp_dir="$(mktemp -d)"
   RESTORE_TEMP_DIR="${temp_dir}"
   trap 'rm -rf "${RESTORE_TEMP_DIR}"' EXIT
-  tar -xzf "${backup_file}" -C "${temp_dir}"
+  tar -xzf "${BACKUP_FILE}" -C "${temp_dir}"
 
   section "Restore targets"
   for project_dir in "${project_dirs[@]}"; do
@@ -95,6 +152,11 @@ main() {
     fi
   else
     warn "Archive does not contain opt/docker"
+  fi
+
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    ok "Dry run completed. No changes applied."
+    return 0
   fi
 
   printf '\nType RESTORE to continue: '
