@@ -1,0 +1,26 @@
+services:
+  dozzle:
+    image: amir20/dozzle:v10.6.6
+    container_name: dozzle
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    environment:
+      DOZZLE_LEVEL: info
+      DOZZLE_NO_ANALYTICS: "true"
+
+    ports:
+      - "127.0.0.1:8081:8080"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: proxy
