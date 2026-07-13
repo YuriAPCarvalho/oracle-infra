@@ -12,16 +12,59 @@ set -Eeuo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
-trap 'on_error "$?" "$LINENO"' ERR
+
+BACKUP_FILE=""
+BACKUP_PARTIAL_FILE=""
+
+backup_error() {
+  local exit_code="$1"
+  local line="$2"
+
+  if [[ -n "${BACKUP_PARTIAL_FILE}" && -e "${BACKUP_PARTIAL_FILE}" ]]; then
+    rm -f -- "${BACKUP_PARTIAL_FILE}" || true
+  fi
+
+  fail "Backup failed at line ${line} (exit ${exit_code}). Partial archive removed."
+  exit "${exit_code}"
+}
+
+trap 'backup_error "$?" "$LINENO"' ERR
+
+run_privileged() {
+  if [[ "${EUID}" -eq 0 ]]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
+set_backup_file_permissions() {
+  local file="$1"
+  local original_user="$2"
+  local original_group="$3"
+  local needs_privilege="$4"
+
+  if [[ "${EUID}" -eq 0 ]]; then
+    chown "${original_user}:${original_group}" "${file}"
+  elif [[ "${needs_privilege}" == "true" ]]; then
+    sudo chown "${original_user}:${original_group}" "${file}"
+  fi
+
+  chmod 600 "${file}"
+}
 
 main() {
   local timestamp
   local backup_dir="${PROJECT_ROOT}/backups"
-  local backup_file
   local data_root
+  local data_archive_path
+  local original_user="${SUDO_USER:-${USER}}"
+  local original_group
   local project_dir
   local tar_args=()
   local active_containers
+  local needs_privileged_tar="false"
+  local checksum_file
   local project_dirs=(
     compose
     configs
@@ -31,11 +74,17 @@ main() {
   )
 
   require_command tar
+  require_command sha256sum
+
+  original_group="$(id -gn "${original_user}")"
+  umask 077
 
   data_root="$(persistent_data_root)"
   mkdir -p "${backup_dir}"
   timestamp="$(date +%Y%m%d-%H%M%S)"
-  backup_file="${backup_dir}/backup-${timestamp}.tar.gz"
+  BACKUP_FILE="${backup_dir}/backup-${timestamp}.tar.gz"
+  BACKUP_PARTIAL_FILE="${BACKUP_FILE}.partial"
+  checksum_file="${BACKUP_FILE}.sha256"
 
   if command -v docker >/dev/null 2>&1; then
     active_containers="$(with_timeout 8 docker ps --format '{{.Names}}' 2>/dev/null || true)"
@@ -45,7 +94,7 @@ main() {
     fi
   fi
 
-  tar_args=(-czf "${backup_file}" -C "${PROJECT_ROOT}")
+  tar_args=(-czf "${BACKUP_PARTIAL_FILE}" -C "${PROJECT_ROOT}")
   for project_dir in "${project_dirs[@]}"; do
     if [[ -e "${PROJECT_ROOT}/${project_dir}" ]]; then
       tar_args+=("${project_dir}")
@@ -55,16 +104,42 @@ main() {
   done
 
   if [[ -d "${data_root}" ]]; then
-    tar_args+=(-C / opt/docker)
+    data_archive_path="${data_root#/}"
+    tar_args+=(-C / "${data_archive_path}")
+    if [[ "${EUID}" -ne 0 ]]; then
+      needs_privileged_tar="true"
+    fi
   else
     warn "Skipping missing persistent data directory: ${data_root}"
   fi
 
-  info "Creating backup ${backup_file}"
-  tar "${tar_args[@]}"
+  rm -f -- "${BACKUP_PARTIAL_FILE}" "${BACKUP_FILE}" "${checksum_file}"
 
-  ok "Backup created: ${backup_file}"
-  kv "Size" "$(bytes_to_human "${backup_file}")"
+  info "Creating backup ${BACKUP_FILE}"
+  if [[ "${needs_privileged_tar}" == "true" ]]; then
+    run_privileged tar "${tar_args[@]}"
+  else
+    tar "${tar_args[@]}"
+  fi
+
+  set_backup_file_permissions "${BACKUP_PARTIAL_FILE}" "${original_user}" "${original_group}" "${needs_privileged_tar}"
+  mv "${BACKUP_PARTIAL_FILE}" "${BACKUP_FILE}"
+  BACKUP_PARTIAL_FILE=""
+
+  if ! tar -tzf "${BACKUP_FILE}" >/dev/null; then
+    rm -f -- "${BACKUP_FILE}"
+    die "Backup integrity validation failed. Archive removed."
+  fi
+
+  (
+    cd "${backup_dir}"
+    sha256sum "$(basename "${BACKUP_FILE}")" >"$(basename "${checksum_file}")"
+  )
+  set_backup_file_permissions "${checksum_file}" "${original_user}" "${original_group}" "false"
+
+  ok "Backup created: ${BACKUP_FILE}"
+  kv "Size" "$(bytes_to_human "${BACKUP_FILE}")"
+  kv "SHA-256" "${checksum_file}"
 }
 
 main "$@"

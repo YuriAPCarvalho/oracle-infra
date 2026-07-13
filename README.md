@@ -59,3 +59,5 @@ Nunca versionar:
 - certificados
 - backups
 - dados persistentes
+
+Backups locais ficam em `backups/`, sao ignorados pelo Git e podem conter banco de dados e chaves do Portainer.

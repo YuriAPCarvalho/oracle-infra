@@ -69,4 +69,6 @@ make backup
 bash scripts/restore.sh backups/backup-YYYYMMDD-HHMMSS.tar.gz
 ```
 
+O backup pode solicitar `sudo` para ler dados protegidos em `/opt/docker`. O arquivo gerado fica em `backups/`, com permissao `600`, acompanhado por `.sha256`.
+
 Consulte `docs/BACKUP.md` e `docs/RESTORE.md` para detalhes.
