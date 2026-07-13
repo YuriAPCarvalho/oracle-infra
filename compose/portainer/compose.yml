@@ -1,0 +1,23 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:2.38.1
+    container_name: portainer
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    ports:
+      - "127.0.0.1:9443:9443"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/docker/portainer/data:/data
+
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: proxy
