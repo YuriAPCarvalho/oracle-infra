@@ -19,7 +19,7 @@ jobs:
 
       - name: ShellCheck
         run: |
-          shellcheck -x bootstrap/*.sh scripts/*.sh scripts/lib/*.sh
+          shellcheck -x -P scripts bootstrap/*.sh scripts/*.sh scripts/lib/*.sh
 
       - name: Bash syntax
         run: |

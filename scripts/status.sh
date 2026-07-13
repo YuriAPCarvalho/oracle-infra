@@ -36,6 +36,46 @@ service_status() {
   printf '%s\n' "${status}"
 }
 
+ufw_status() {
+  local status="n/a"
+
+  if command -v ufw >/dev/null 2>&1; then
+    if [[ "${EUID}" -eq 0 ]]; then
+      status="$(ufw status 2>/dev/null | head -n 1 || true)"
+    elif sudo -n true 2>/dev/null; then
+      status="$(sudo -n ufw status 2>/dev/null | head -n 1 || true)"
+    else
+      status="requires sudo"
+    fi
+  else
+    status="not installed"
+  fi
+
+  printf '%s\n' "${status:-n/a}"
+}
+
+fail2ban_status() {
+  local status="n/a"
+
+  if command -v fail2ban-client >/dev/null 2>&1; then
+    if fail2ban-client ping >/dev/null 2>&1; then
+      status="$(fail2ban-client ping 2>/dev/null || true)"
+    elif [[ "${EUID}" -ne 0 ]] && sudo -n true 2>/dev/null && sudo -n fail2ban-client ping >/dev/null 2>&1; then
+      status="$(sudo -n fail2ban-client ping 2>/dev/null || true)"
+    elif systemctl is-active fail2ban >/dev/null 2>&1; then
+      status="active"
+    elif [[ "${EUID}" -ne 0 ]] && sudo -n true 2>/dev/null && sudo -n systemctl is-active fail2ban >/dev/null 2>&1; then
+      status="active"
+    else
+      status="not running or requires sudo"
+    fi
+  else
+    status="not installed"
+  fi
+
+  printf '%s\n' "${status:-n/a}"
+}
+
 main() {
   local os_name="n/a"
   local os_version="n/a"
@@ -103,17 +143,8 @@ main() {
   done
 
   section "Security"
-  if command -v ufw >/dev/null 2>&1; then
-    kv "UFW" "$(ufw status 2>/dev/null | head -n 1)"
-  else
-    kv "UFW" "not installed"
-  fi
-
-  if command -v fail2ban-client >/dev/null 2>&1; then
-    kv "Fail2Ban" "$(fail2ban-client ping 2>/dev/null || systemctl is-active fail2ban 2>/dev/null || printf 'not running\n')"
-  else
-    kv "Fail2Ban" "not installed"
-  fi
+  kv "UFW" "$(ufw_status)"
+  kv "Fail2Ban" "$(fail2ban_status)"
 }
 
 main "$@"

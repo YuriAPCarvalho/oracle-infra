@@ -34,7 +34,12 @@ docker_logs_args() {
   local follow="$2"
 
   printf '%s\0%s\0' "--tail" "${tail}"
-  [[ "${follow}" == "true" ]] && printf '%s\0' "--follow"
+
+  if [[ "${follow}" == "true" ]]; then
+    printf '%s\0' "--follow"
+  fi
+
+  return 0
 }
 
 show_container_logs() {
