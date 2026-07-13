@@ -44,3 +44,16 @@ make update
 ```
 
 O comando executa `git pull --ff-only`, valida todos os compose files, baixa imagens e aplica `docker compose up -d`. Ele nao remove containers, volumes nem executa prune.
+
+## Aplicacoes futuras
+
+Aplicacoes novas devem seguir `docs/APPLICATION_DEPLOYMENT.md` e o checklist em `docs/SERVICE_ONBOARDING_CHECKLIST.md`.
+
+Na primeira fase de aplicacoes, somente estes servicos serao preparados para migracao futura:
+
+- bot de ponto;
+- bot do Discord.
+
+Outros projetos nao serao migrados inicialmente.
+
+Use `templates/docker-service/` como base estrutural. Nao crie Compose definitivo sem requisitos reais do projeto, imagem validada em ARM64, segredos mapeados e rollback documentado.

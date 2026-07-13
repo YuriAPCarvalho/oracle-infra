@@ -72,3 +72,28 @@ bash scripts/restore.sh backups/backup-YYYYMMDD-HHMMSS.tar.gz
 O backup pode solicitar `sudo` para ler dados protegidos em `/opt/docker`. O arquivo gerado fica em `backups/`, com permissao `600`, acompanhado por `.sha256`.
 
 Consulte `docs/BACKUP.md` e `docs/RESTORE.md` para detalhes.
+
+## Validacao
+
+```bash
+make shellcheck
+make validate-compose
+make validate
+```
+
+`make validate` executa sintaxe Bash, ShellCheck, `git diff --check`, validacao dos Compose existentes, validacao do template de servico e checks basicos contra `.env` real ou segredos obvios.
+
+## Integracao de novos servicos
+
+Novos servicos so entram no inventario operacional depois de existir Compose real, container validado e documentacao concluida.
+
+- `status.sh`: passa a exibir o servico quando ele for adicionado em `scripts/lib/common.sh`.
+- `health.sh`: deve receber checks especificos e diretorios persistentes reais.
+- `logs.sh`: ja aceita container existente, mas o servico gerenciado deve entrar no inventario quando for producao.
+- `restart.sh`, `shell.sh` e `update.sh`: dependem do Compose real registrado no helper comum.
+- `backup.sh`: inclui `/opt/docker`, mas o servico deve documentar o que precisa de backup.
+- `restore.sh`: deve ser testado com `--dry-run` apos o primeiro backup contendo o servico.
+- Makefile e GitHub Actions: devem ganhar apenas targets e validacoes que reflitam servicos reais.
+- Uptime Kuma: deve monitorar container, heartbeat ou endpoint HTTP conforme o tipo do bot.
+
+Bots sem HTTP devem ficar apenas na rede `internal`. Traefik deve ser usado somente quando houver endpoint HTTP real.

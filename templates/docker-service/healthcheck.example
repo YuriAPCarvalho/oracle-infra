@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+set -eu
+
+# Replace this file with a command that proves the application is healthy.
+# Examples:
+#   wget -qO- http://127.0.0.1:3000/health >/dev/null
+#   pgrep -f "application-process" >/dev/null
+
+exit 0

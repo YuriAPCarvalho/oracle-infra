@@ -1,0 +1,51 @@
+services:
+  app:
+    image: ${SERVICE_IMAGE:?set SERVICE_IMAGE}
+    container_name: ${SERVICE_NAME:?set SERVICE_NAME}
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    env_file:
+      - .env
+
+    # No public ports by default.
+    # Bots and workers without HTTP endpoints should stay on the internal network only.
+    # Use Traefik only when the application exposes a real HTTP endpoint that must be routed.
+    # ports:
+    #   - "127.0.0.1:${SERVICE_PORT}:${SERVICE_PORT}"
+
+    # Optional persistence. Enable only when the application needs local durable state.
+    # volumes:
+    #   - /opt/docker/${SERVICE_NAME}/data:/app/data
+
+    # Optional healthcheck. Replace with a command supported by the application image.
+    # healthcheck:
+    #   test: ["CMD", "/app/healthcheck"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 20s
+
+    networks:
+      - internal
+      # Enable proxy only when Traefik routing is required.
+      # - proxy
+
+    # Example Traefik labels. Keep disabled until there is a real HTTP endpoint.
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.${SERVICE_NAME}.rule=Host(`${SERVICE_HOST}`)
+    #   - traefik.http.routers.${SERVICE_NAME}.entrypoints=websecure
+    #   - traefik.http.services.${SERVICE_NAME}.loadbalancer.server.port=${SERVICE_PORT}
+
+networks:
+  internal:
+    external: true
+    name: internal
+
+  # Enable only when the service must be reachable through Traefik.
+  # proxy:
+  #   external: true
+  #   name: proxy
