@@ -18,6 +18,7 @@ main() {
   local timestamp
   local backup_dir="${PROJECT_ROOT}/backups"
   local backup_file
+  local data_root
   local project_dir
   local tar_args=()
   local active_containers
@@ -31,6 +32,7 @@ main() {
 
   require_command tar
 
+  data_root="$(persistent_data_root)"
   mkdir -p "${backup_dir}"
   timestamp="$(date +%Y%m%d-%H%M%S)"
   backup_file="${backup_dir}/backup-${timestamp}.tar.gz"
@@ -52,10 +54,10 @@ main() {
     fi
   done
 
-  if [[ -d "${DATA_ROOT}" ]]; then
+  if [[ -d "${data_root}" ]]; then
     tar_args+=(-C / opt/docker)
   else
-    warn "Skipping missing persistent data directory: ${DATA_ROOT}"
+    warn "Skipping missing persistent data directory: ${data_root}"
   fi
 
   info "Creating backup ${backup_file}"

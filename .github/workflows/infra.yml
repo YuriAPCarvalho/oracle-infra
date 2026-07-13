@@ -19,11 +19,11 @@ jobs:
 
       - name: ShellCheck
         run: |
-          find bootstrap scripts -name '*.sh' -print0 | xargs -0 shellcheck
+          shellcheck -x bootstrap/*.sh scripts/*.sh scripts/lib/*.sh
 
       - name: Bash syntax
         run: |
-          find bootstrap scripts -name '*.sh' -print0 | xargs -0 -I{} bash -n {}
+          bash -n bootstrap/*.sh scripts/*.sh scripts/lib/*.sh
 
       - name: Validate compose files
         run: |

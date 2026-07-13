@@ -4,7 +4,8 @@ set -Eeuo pipefail
 
 COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${COMMON_DIR}/../.." && pwd)"
-DATA_ROOT="/opt/docker"
+DATA_ROOT="${DATA_ROOT:-/opt/docker}"
+export DATA_ROOT
 
 SERVICES=(
   traefik
@@ -82,6 +83,10 @@ with_timeout() {
   else
     "$@"
   fi
+}
+
+persistent_data_root() {
+  printf '%s\n' "${DATA_ROOT}"
 }
 
 service_compose_file() {

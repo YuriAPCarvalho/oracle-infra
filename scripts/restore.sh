@@ -42,6 +42,7 @@ main() {
   local backup_file="${1:-}"
   local temp_dir
   local answer
+  local data_root
   local project_dir
   local project_dirs=(
     compose
@@ -60,6 +61,7 @@ main() {
     die "Backup file not found: ${backup_file}"
 
   require_command tar
+  data_root="$(persistent_data_root)"
 
   info "Validating archive"
   tar -tzf "${backup_file}" >/dev/null
@@ -86,10 +88,10 @@ main() {
   done
 
   if [[ -e "${temp_dir}/opt/docker" ]]; then
-    if [[ -e "${DATA_ROOT}" ]]; then
-      warn "Existing persistent data will be overwritten after confirmation: ${DATA_ROOT}"
+    if [[ -e "${data_root}" ]]; then
+      warn "Existing persistent data will be overwritten after confirmation: ${data_root}"
     else
-      info "Will create ${DATA_ROOT}"
+      info "Will create ${data_root}"
     fi
   else
     warn "Archive does not contain opt/docker"
@@ -116,9 +118,9 @@ main() {
   if [[ -e "${temp_dir}/opt/docker" ]]; then
     section "Restoring persistent data"
     sudo_cmd mkdir -p /opt
-    sudo_cmd rm -rf "${DATA_ROOT}"
+    sudo_cmd rm -rf "${data_root}"
     sudo_cmd cp -a "${temp_dir}/opt/docker" /opt/docker
-    ok "Restored ${DATA_ROOT}"
+    ok "Restored ${data_root}"
   fi
 
   ok "Restore completed."

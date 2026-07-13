@@ -38,7 +38,9 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
 chmod a+r /etc/apt/keyrings/docker.asc
 
 ARCH="$(dpkg --print-architecture)"
-CODENAME="$(. /etc/os-release && echo "${VERSION_CODENAME}")"
+# shellcheck source=/etc/os-release
+source /etc/os-release
+CODENAME="${VERSION_CODENAME}"
 
 cat > /etc/apt/sources.list.d/docker.sources <<EOF
 Types: deb

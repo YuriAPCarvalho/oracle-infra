@@ -2,6 +2,7 @@
 .env* text eol=lf
 .gitattributes text eol=lf
 .gitignore text eol=lf
+.shellcheckrc text eol=lf
 Makefile text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf

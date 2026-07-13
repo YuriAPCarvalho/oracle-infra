@@ -47,6 +47,14 @@ show_container_logs() {
   docker logs "${args[@]}" "${container}"
 }
 
+cleanup_follow_processes() {
+  local process_pid
+
+  for process_pid in "${FOLLOW_PIDS[@]}"; do
+    kill "${process_pid}" 2>/dev/null || true
+  done
+}
+
 show_all_logs() {
   local tail="$1"
   local follow="$2"
@@ -64,7 +72,7 @@ show_all_logs() {
     return 0
   fi
 
-  trap 'for pid in "${FOLLOW_PIDS[@]}"; do kill "${pid}" 2>/dev/null || true; done' INT TERM EXIT
+  trap cleanup_follow_processes INT TERM EXIT
 
   for service in "${SERVICES[@]}"; do
     if container_exists "${service}"; then
