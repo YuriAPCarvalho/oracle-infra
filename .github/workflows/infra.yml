@@ -4,9 +4,14 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -75,3 +80,21 @@ jobs:
             echo "Potential uncommented secret assignment detected."
             exit 1
           fi
+
+      - name: Validate workflows and CI templates
+        run: |
+          set -Eeuo pipefail
+          bash scripts/validate-workflows.sh
+
+      - name: Discord notify dry-run
+        run: |
+          set -Eeuo pipefail
+          bash scripts/discord-notify.sh --dry-run \
+            --title "CI dry-run" \
+            --service "oracle-infra" \
+            --environment "ci" \
+            --status started \
+            --commit "${GITHUB_SHA}" \
+            --author "github-actions" \
+            --branch "${GITHUB_REF_NAME}" \
+            --message "payload only"

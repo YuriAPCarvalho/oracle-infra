@@ -30,10 +30,14 @@ Use este checklist antes de adicionar qualquer novo servico ao inventario operac
 - [ ] Uptime Kuma configurado.
 - [ ] Backup validado.
 - [ ] Restore dry-run validado.
-- [ ] Rollback testado.
+- [ ] Rollback de imagem testado (ver `docs/ROLLBACK.md`).
 - [ ] Documentacao atualizada.
+- [ ] Pipeline de build/publish configurado a partir de `templates/github-actions/`.
+- [ ] Pipeline de deploy VPS configurado (Environment `production`, secrets em `docs/GITHUB_SECRETS.md`).
+- [ ] Notificacao Discord de deploy validada (ou dry-run documentado).
 - [ ] Pipeline verde.
-- [ ] Deploy validado.
+- [ ] Deploy validado com tag `sha-<commit>`.
+- [ ] Healthcheck do servico definido (`running` | `docker` | `http` | `exec`).
 
 ## Integracao Com Scripts
 
@@ -47,4 +51,5 @@ Use este checklist antes de adicionar qualquer novo servico ao inventario operac
 - [ ] `backup.sh`: confirmar inclusao de `/opt/docker/<service>`.
 - [ ] `restore.sh`: testar dry-run com backup recente.
 - [ ] Makefile: adicionar targets especificos somente se agregarem valor.
-- [ ] GitHub Actions: validar Compose e checks do servico.
+- [ ] GitHub Actions (oracle-infra): validar Compose e checks do servico.
+- [ ] GitHub Actions (repo da app): callers de build/deploy apontando para ref estavel do oracle-infra.

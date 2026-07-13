@@ -19,3 +19,5 @@ logs/*
 *.tmp
 
 acme.json
+
+.tools/

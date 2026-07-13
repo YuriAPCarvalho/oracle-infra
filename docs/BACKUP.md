@@ -9,7 +9,7 @@ O backup operacional e gerado por `scripts/backup.sh`.
 - `bootstrap/`
 - `scripts/`
 - `docs/`
-- `/opt/docker`
+- `/opt/docker` (inclui dados de servicos e `/opt/docker/deploy-state/` do CI/CD)
 
 ## Executar
 

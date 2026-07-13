@@ -1,0 +1,65 @@
+# TEMPLATE — copy into an application repository as .github/workflows/build-and-publish.yml
+# Replace every <PLACEHOLDER> before enabling.
+#
+# This file is documentation-only inside oracle-infra and is NOT an active workflow.
+# Prefer @v1. Do not use @main for production.
+#
+# Status: experimental until validated with the first real service deploy.
+
+name: Build and publish
+
+on:
+  push:
+    branches:
+      - <PRODUCTION_BRANCH>
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-<SERVICE_NAME>-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test (caller)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run project tests
+        run: <TEST_COMMAND>
+
+  build-validate:
+    name: Build validate (no publish)
+    needs: test
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    uses: YuriAPCarvalho/oracle-infra/.github/workflows/reusable-docker-build.yml@v1
+    with:
+      image_name: <OWNER_OR_ORG>/<SERVICE_NAME>
+      context: <BUILD_CONTEXT>
+      dockerfile: <DOCKERFILE_PATH>
+      platforms: linux/arm64
+      push: false
+      service_name: <SERVICE_NAME>
+
+  build-publish:
+    name: Build and publish
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/<PRODUCTION_BRANCH>'
+    permissions:
+      contents: read
+      packages: write
+    uses: YuriAPCarvalho/oracle-infra/.github/workflows/reusable-docker-build.yml@v1
+    with:
+      image_name: <OWNER_OR_ORG>/<SERVICE_NAME>
+      context: <BUILD_CONTEXT>
+      dockerfile: <DOCKERFILE_PATH>
+      platforms: linux/arm64
+      push: true
+      service_name: <SERVICE_NAME>

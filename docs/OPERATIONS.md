@@ -78,10 +78,18 @@ Consulte `docs/BACKUP.md` e `docs/RESTORE.md` para detalhes.
 ```bash
 make shellcheck
 make validate-compose
+make validate-workflows
+make validate-ci
 make validate
 ```
 
-`make validate` executa sintaxe Bash, ShellCheck, `git diff --check`, validacao dos Compose existentes, validacao do template de servico e checks basicos contra `.env` real ou segredos obvios.
+`make validate` executa sintaxe Bash, ShellCheck, `git diff --check`, validacao dos Compose existentes, validacao do template de servico, checks basicos contra `.env` real ou segredos obvios, actionlint nos workflows e dry-run do payload Discord (sem envio).
+
+`make validate-ci` foca na base CI/CD (workflows, templates documentais, notify dry-run).
+
+Documentacao CI/CD: `docs/CI_CD.md`, `docs/DISCORD_NOTIFICATIONS.md`, `docs/ROLLBACK.md`, `docs/GITHUB_SECRETS.md`.
+
+Deploy remoto de aplicacoes **nao** e feito por `make update`. Use o fluxo em `docs/CI_CD.md` / `scripts/ci-deploy-service.sh`.
 
 ## Integracao de novos servicos
 

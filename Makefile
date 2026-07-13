@@ -3,7 +3,7 @@ SHELL := /usr/bin/env bash
 SERVICE ?=
 TAIL ?= 100
 
-.PHONY: status health logs restart shell backup update validate validate-compose validate-secrets shellcheck
+.PHONY: status health logs restart shell backup update validate validate-compose validate-secrets validate-workflows validate-ci shellcheck
 
 status:
 	bash scripts/status.sh
@@ -65,9 +65,34 @@ validate-secrets:
 		exit 1; \
 	fi
 
+validate-workflows:
+	bash scripts/validate-workflows.sh
+
+validate-ci: validate-workflows
+	@set -Eeuo pipefail; \
+	echo "Discord notify dry-run (no network)"; \
+	bash scripts/discord-notify.sh --dry-run \
+		--title "CI dry-run" \
+		--service "oracle-infra" \
+		--environment "local" \
+		--status started \
+		--commit "dry-run" \
+		--author "make validate-ci" \
+		--branch "local" \
+		--message "payload only"; \
+	test -f templates/github-actions/build-and-publish.yml; \
+	test -f templates/github-actions/deploy-to-vps.yml; \
+	test -f templates/github-actions/README.md; \
+	test -f .github/workflows/reusable-docker-build.yml; \
+	test -f .github/workflows/reusable-vps-deploy.yml; \
+	test -f .github/actions/discord-notify/action.yml; \
+	test -f scripts/ci-deploy-service.sh; \
+	echo "validate-ci OK"
+
 validate:
 	bash -n bootstrap/*.sh scripts/*.sh scripts/lib/*.sh
 	$(MAKE) shellcheck
 	git diff --check
 	$(MAKE) validate-compose
 	$(MAKE) validate-secrets
+	$(MAKE) validate-ci

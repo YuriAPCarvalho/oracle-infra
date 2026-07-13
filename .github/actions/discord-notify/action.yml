@@ -1,0 +1,91 @@
+name: Discord Notify
+description: Send a Discord webhook notification for CI/CD events without logging the webhook URL
+
+inputs:
+  webhook_url:
+    description: Discord webhook URL (from secrets; never logged in full)
+    required: false
+    default: ""
+  title:
+    description: Notification title
+    required: true
+  service:
+    description: Service name
+    required: false
+    default: ""
+  environment:
+    description: Environment name
+    required: false
+    default: ""
+  status:
+    description: started|success|failure|rollback_started|rollback_success|rollback_failure
+    required: true
+  commit:
+    description: Commit SHA
+    required: false
+    default: ""
+  author:
+    description: Commit author
+    required: false
+    default: ""
+  branch:
+    description: Branch name
+    required: false
+    default: ""
+  run_url:
+    description: GitHub Actions run URL
+    required: false
+    default: ""
+  message:
+    description: Extra message
+    required: false
+    default: ""
+  fail_on_error:
+    description: If true, fail the step when notification fails
+    required: false
+    default: "false"
+  dry_run:
+    description: If true, print payload only (no network)
+    required: false
+    default: "false"
+  timeout_seconds:
+    description: curl timeout in seconds
+    required: false
+    default: "10"
+
+runs:
+  using: composite
+  steps:
+    - name: Notify Discord
+      shell: bash
+      env:
+        DISCORD_WEBHOOK_URL: ${{ inputs.webhook_url }}
+        INPUT_TITLE: ${{ inputs.title }}
+        INPUT_SERVICE: ${{ inputs.service }}
+        INPUT_ENVIRONMENT: ${{ inputs.environment }}
+        INPUT_STATUS: ${{ inputs.status }}
+        INPUT_COMMIT: ${{ inputs.commit }}
+        INPUT_AUTHOR: ${{ inputs.author }}
+        INPUT_BRANCH: ${{ inputs.branch }}
+        INPUT_RUN_URL: ${{ inputs.run_url }}
+        INPUT_MESSAGE: ${{ inputs.message }}
+        INPUT_FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
+        INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        INPUT_TIMEOUT: ${{ inputs.timeout_seconds }}
+      run: |
+        set -Eeuo pipefail
+        args=(
+          --title "${INPUT_TITLE}"
+          --status "${INPUT_STATUS}"
+          --timeout "${INPUT_TIMEOUT}"
+        )
+        [[ -n "${INPUT_SERVICE}" ]] && args+=(--service "${INPUT_SERVICE}")
+        [[ -n "${INPUT_ENVIRONMENT}" ]] && args+=(--environment "${INPUT_ENVIRONMENT}")
+        [[ -n "${INPUT_COMMIT}" ]] && args+=(--commit "${INPUT_COMMIT}")
+        [[ -n "${INPUT_AUTHOR}" ]] && args+=(--author "${INPUT_AUTHOR}")
+        [[ -n "${INPUT_BRANCH}" ]] && args+=(--branch "${INPUT_BRANCH}")
+        [[ -n "${INPUT_RUN_URL}" ]] && args+=(--run-url "${INPUT_RUN_URL}")
+        [[ -n "${INPUT_MESSAGE}" ]] && args+=(--message "${INPUT_MESSAGE}")
+        [[ "${INPUT_FAIL_ON_ERROR}" == "true" ]] && args+=(--fail-on-error)
+        [[ "${INPUT_DRY_RUN}" == "true" ]] && args+=(--dry-run)
+        bash "${GITHUB_ACTION_PATH}/../../../scripts/discord-notify.sh" "${args[@]}"

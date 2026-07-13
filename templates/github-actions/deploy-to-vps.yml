@@ -1,0 +1,74 @@
+# TEMPLATE — copy into an application repository as .github/workflows/deploy-to-vps.yml
+# Replace every <PLACEHOLDER> before enabling.
+#
+# Prefer @v1. Do not use @main for production.
+#
+# Environment "production" on THIS service repo:
+# - Job "approve" applies protection rules / manual reviewers.
+# - Deploy secrets must be available to the job that calls "uses".
+#   Prefer repository secrets, or Environment secrets mirrored as repository secrets,
+#   until your actionlint version accepts "environment" on a "uses" job
+#   (GitHub Actions itself supports environment+uses).
+#
+# Status: experimental until validated with the first real service deploy.
+
+name: Deploy to VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Immutable image tag (prefer sha-<commit>)
+        required: true
+        type: string
+      dry_run:
+        description: Validate only (no pull / compose mutate / state write)
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-<SERVICE_NAME>-production
+  cancel-in-progress: false
+
+jobs:
+  approve:
+    name: Production gate
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Gate
+        run: echo "Production environment approved for <SERVICE_NAME>"
+
+  deploy:
+    needs: approve
+    permissions:
+      contents: read
+    uses: YuriAPCarvalho/oracle-infra/.github/workflows/reusable-vps-deploy.yml@v1
+    with:
+      service_name: <SERVICE_NAME>
+      image: ghcr.io/<OWNER_OR_ORG>/<SERVICE_NAME>
+      tag: ${{ inputs.tag }}
+      compose_dir: compose/<SERVICE_NAME>
+      container_name: <SERVICE_NAME>
+      health_mode: <HEALTH_MODE>
+      health_timeout: 120
+      health_retries: 12
+      enable_rollback: true
+      dry_run: ${{ inputs.dry_run }}
+      environment: production
+      notify: true
+      infra_repository: YuriAPCarvalho/oracle-infra
+      infra_ref: v1
+    secrets:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_SSH_HOST_KEY: ${{ secrets.VPS_SSH_HOST_KEY }}
+      VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}

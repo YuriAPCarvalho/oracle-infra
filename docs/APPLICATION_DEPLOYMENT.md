@@ -9,12 +9,17 @@ desenvolvimento local
 -> push
 -> GitHub Actions
 -> build da imagem
--> publicacao da imagem
+-> publicacao da imagem (GHCR)
 -> atualizacao controlada na VPS
 -> health check
 -> validacao
 -> rollback se necessario
+-> notificacao Discord
 ```
+
+A base reutilizavel vive neste repositorio e e **experimental** ate o primeiro deploy controlado de um servico real. Detalhes: [CI_CD.md](CI_CD.md), [ROLLBACK.md](ROLLBACK.md), [DISCORD_NOTIFICATIONS.md](DISCORD_NOTIFICATIONS.md), [GITHUB_SECRETS.md](GITHUB_SECRETS.md).
+
+Callers devem pinar `YuriAPCarvalho/oracle-infra` com tag versionada (`@v1`), nao `@main`. Testes ficam no workflow do **caller**; o reusable de build nao executa shell arbitrario.
 
 ## Principios
 
@@ -30,22 +35,29 @@ desenvolvimento local
 - Bots sem interface HTTP devem ficar apenas na rede `internal`.
 - Traefik sera usado apenas quando houver endpoint HTTP real.
 - Cada aplicacao devera ter rollback documentado.
+- Producao prefere tag imutavel `sha-<commit>` no GHCR.
+- Notificacoes de pipeline via Discord webhook (nao Telegram).
 
 ## Padrao de Compose
 
 Use `templates/docker-service/` como ponto de partida. O template nao e uma aplicacao de producao; ele existe para manter consistencia de seguranca, redes, persistencia e healthcheck.
 
+O deploy CI exporta `SERVICE_IMAGE=<repo>:<tag>` compatível com `${SERVICE_IMAGE}` do template.
+
 ## Deploy Controlado
 
-1. Validar imagem e Compose em ambiente local ou CI.
-2. Publicar imagem versionada.
-3. Atualizar o Compose pelo Git.
-4. Executar `make validate`.
-5. Aplicar na VPS com fluxo documentado.
-6. Conferir logs e health check.
-7. Registrar rollback.
+1. Testar no workflow do repositorio da aplicacao.
+2. Publicar imagem versionada no GHCR (`reusable-docker-build.yml` com `push: true`).
+3. Atualizar o Compose pelo Git neste repositorio de infra (manifesto relativo `compose/<svc>`).
+4. Executar `make validate` neste repositorio.
+5. Deploy via `reusable-vps-deploy.yml@v1` (preferir `dry_run` primeiro).
+6. Conferir logs, health check e `/opt/docker/deploy-state/<svc>/`.
+7. Registrar/acompanhar rollback automatico se habilitado.
+8. Conferir Discord e summary do job.
 
 ## Rollback
+
+Ver [ROLLBACK.md](ROLLBACK.md).
 
 Todo servico deve documentar:
 
@@ -74,3 +86,5 @@ Para bots com HTTP:
 - tempo de resposta;
 - validade do certificado, se publico;
 - monitoramento pelo Uptime Kuma.
+
+Notificacoes de **pipeline** (sucesso/falha/rollback) usam Discord. Alertas de disponibilidade do Uptime Kuma sao assunto separado.

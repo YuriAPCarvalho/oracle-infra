@@ -40,9 +40,23 @@ make shell SERVICE=traefik
 make backup
 make update
 make validate
+make validate-ci
+make validate-workflows
 ```
 
 Os scripts tambem podem ser executados diretamente com `bash scripts/<script>.sh`.
+
+## CI/CD (base reutilizavel)
+
+Este repositorio expoe workflows reutilizaveis de build (GHCR) e deploy (SSH + healthcheck + rollback), notificacoes Discord e templates para futuros repositorios de aplicacao.
+
+Nao realiza deploy de bots automaticamente. Painéis seguem acessíveis apenas por tunel SSH.
+
+- [CI/CD](docs/CI_CD.md)
+- [Discord Notifications](docs/DISCORD_NOTIFICATIONS.md)
+- [Rollback](docs/ROLLBACK.md)
+- [GitHub Secrets](docs/GITHUB_SECRETS.md)
+- [templates/github-actions](templates/github-actions/README.md)
 
 ## Roadmap
 
@@ -66,10 +80,9 @@ Concluida:
 Proxima fase:
 
 - configuracao operacional do Uptime Kuma;
-- notificacoes via Telegram;
 - monitoramento dos servicos existentes;
 - monitoramento futuro dos bots;
-- politica de alertas.
+- politica de alertas (canal a definir na fase de observabilidade).
 
 ### Fase 3 - DNS e HTTPS
 
@@ -81,12 +94,16 @@ Proxima fase:
 
 ### Fase 4 - Deploy
 
-- padrao de deploy;
-- GitHub Actions;
-- segredos;
-- rollback;
-- health check;
-- documentacao.
+Base **experimental** disponivel:
+
+- workflows reutilizaveis (`@v1`);
+- GHCR + tags imutaveis;
+- deploy SSH com host key pinada;
+- rollback de imagem + estado em `/opt/docker/deploy-state`;
+- notificacoes Discord;
+- templates e documentacao.
+
+**Nao** considerar pronto para producao ate o primeiro deploy controlado de um servico real. Nenhum bot e migrado nesta base sozinha.
 
 ### Fase 5 - Primeiros Servicos
 
@@ -104,6 +121,10 @@ Outros projetos nao serao migrados inicialmente.
 - [Restore](docs/RESTORE.md)
 - [Operations](docs/OPERATIONS.md)
 - [Application Deployment](docs/APPLICATION_DEPLOYMENT.md)
+- [CI/CD](docs/CI_CD.md)
+- [Discord Notifications](docs/DISCORD_NOTIFICATIONS.md)
+- [Rollback](docs/ROLLBACK.md)
+- [GitHub Secrets](docs/GITHUB_SECRETS.md)
 - [Service Onboarding Checklist](docs/SERVICE_ONBOARDING_CHECKLIST.md)
 
 ## Seguranca

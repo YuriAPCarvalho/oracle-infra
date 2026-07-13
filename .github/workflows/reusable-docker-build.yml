@@ -1,0 +1,247 @@
+# Reusable Docker build / optional GHCR publish.
+# Tests must run in the CALLER workflow before invoking this reusable workflow.
+# Call from application repositories; do not invent bot Dockerfiles here.
+name: Reusable Docker Build
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        description: Image name without registry (e.g. my-org/my-service)
+        required: true
+        type: string
+      context:
+        description: Build context path
+        required: false
+        type: string
+        default: "."
+      dockerfile:
+        description: Path to Dockerfile
+        required: false
+        type: string
+        default: Dockerfile
+      platforms:
+        description: Target platforms (comma-separated)
+        required: false
+        type: string
+        default: linux/arm64
+      push:
+        description: When true, publish to GHCR (packages:write). When false, build-only validation.
+        required: false
+        type: boolean
+        default: false
+      service_name:
+        description: Service name for labels
+        required: false
+        type: string
+        default: ""
+      registry:
+        description: Container registry host
+        required: false
+        type: string
+        default: ghcr.io
+    outputs:
+      image:
+        description: Fully qualified image without tag
+        value: ${{ jobs.publish.outputs.image || jobs.validate.outputs.image }}
+      tags:
+        description: Built or published tags
+        value: ${{ jobs.publish.outputs.tags || jobs.validate.outputs.tags }}
+      digest:
+        description: Image digest when pushed (empty for validate-only)
+        value: ${{ jobs.publish.outputs.digest }}
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Build (no publish)
+    if: ${{ !inputs.push }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+      tags: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Validate structured inputs
+        env:
+          IMAGE_NAME: ${{ inputs.image_name }}
+          CONTEXT: ${{ inputs.context }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          PLATFORMS: ${{ inputs.platforms }}
+          REGISTRY: ${{ inputs.registry }}
+        run: |
+          set -Eeuo pipefail
+          [[ "${IMAGE_NAME}" =~ ^[a-z0-9]+([._-][a-z0-9]+)*(/[a-z0-9]+([._-][a-z0-9]+)*)+$ ]] || {
+            echo "image_name must look like owner/name" >&2
+            exit 1
+          }
+          [[ "${REGISTRY}" =~ ^[a-z0-9.-]+$ ]] || { echo "invalid registry" >&2; exit 1; }
+          [[ "${CONTEXT}" != *..* ]] || { echo "context must not contain .." >&2; exit 1; }
+          [[ "${DOCKERFILE}" != *..* ]] || { echo "dockerfile must not contain .." >&2; exit 1; }
+          [[ "${PLATFORMS}" =~ ^linux/(amd64|arm64)(,linux/(amd64|arm64))?$ ]] || {
+            echo "platforms must be linux/arm64 and/or linux/amd64" >&2
+            exit 1
+          }
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.registry }}/${{ inputs.image_name }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=raw,value=sha-${{ github.sha }},enable=true
+            type=ref,event=branch
+          labels: |
+            org.opencontainers.image.title=${{ inputs.service_name != '' && inputs.service_name || inputs.image_name }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+        env:
+          DOCKER_METADATA_SHORT_SHA_LENGTH: 12
+
+      - name: Expose image without tag
+        id: image
+        run: |
+          set -Eeuo pipefail
+          echo "image=${{ inputs.registry }}/${{ inputs.image_name }}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build only
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: ${{ inputs.platforms }}
+          push: false
+          load: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Summary
+        run: |
+          set -Eeuo pipefail
+          {
+            echo "## Docker build (validate only)"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Image | \`${{ inputs.registry }}/${{ inputs.image_name }}\` |"
+            echo "| Platforms | \`${{ inputs.platforms }}\` |"
+            echo "| Push | \`false\` |"
+            echo "| Tags | \`${{ steps.meta.outputs.tags }}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  publish:
+    name: Build and publish
+    if: ${{ inputs.push }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+      tags: ${{ steps.meta.outputs.tags }}
+      digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Validate structured inputs
+        env:
+          IMAGE_NAME: ${{ inputs.image_name }}
+          CONTEXT: ${{ inputs.context }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          PLATFORMS: ${{ inputs.platforms }}
+          REGISTRY: ${{ inputs.registry }}
+        run: |
+          set -Eeuo pipefail
+          [[ "${IMAGE_NAME}" =~ ^[a-z0-9]+([._-][a-z0-9]+)*(/[a-z0-9]+([._-][a-z0-9]+)*)+$ ]] || {
+            echo "image_name must look like owner/name" >&2
+            exit 1
+          }
+          [[ "${REGISTRY}" =~ ^[a-z0-9.-]+$ ]] || { echo "invalid registry" >&2; exit 1; }
+          [[ "${CONTEXT}" != *..* ]] || { echo "context must not contain .." >&2; exit 1; }
+          [[ "${DOCKERFILE}" != *..* ]] || { echo "dockerfile must not contain .." >&2; exit 1; }
+          [[ "${PLATFORMS}" =~ ^linux/(amd64|arm64)(,linux/(amd64|arm64))?$ ]] || {
+            echo "platforms must be linux/arm64 and/or linux/amd64" >&2
+            exit 1
+          }
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.registry }}/${{ inputs.image_name }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=raw,value=sha-${{ github.sha }},enable=true
+            type=ref,event=branch
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=semver,pattern=release-{{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=semver,pattern=release-{{major}}.{{minor}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+          labels: |
+            org.opencontainers.image.title=${{ inputs.service_name != '' && inputs.service_name || inputs.image_name }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+        env:
+          DOCKER_METADATA_SHORT_SHA_LENGTH: 12
+
+      - name: Expose image without tag
+        id: image
+        run: |
+          set -Eeuo pipefail
+          echo "image=${{ inputs.registry }}/${{ inputs.image_name }}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: ${{ inputs.platforms }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Summary
+        run: |
+          set -Eeuo pipefail
+          {
+            echo "## Docker build and publish"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Image | \`${{ inputs.registry }}/${{ inputs.image_name }}\` |"
+            echo "| Platforms | \`${{ inputs.platforms }}\` |"
+            echo "| Push | \`true\` |"
+            echo "| Tags | \`${{ steps.meta.outputs.tags }}\` |"
+            echo "| Digest | \`${{ steps.build.outputs.digest }}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"

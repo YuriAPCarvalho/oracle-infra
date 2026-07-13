@@ -1,0 +1,395 @@
+# Reusable controlled deploy to the Oracle VPS over SSH.
+# Experimental until validated with a real service (e.g. bot-ponto).
+# Callers must pass secrets explicitly; Environment approval lives on the service repo.
+name: Reusable VPS Deploy
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: Logical service name (safe token)
+        required: true
+        type: string
+      image:
+        description: Image repository without tag (e.g. ghcr.io/org/svc)
+        required: true
+        type: string
+      tag:
+        description: Immutable image tag (prefer sha-<commit>)
+        required: true
+        type: string
+      compose_dir:
+        description: Relative compose dir under /opt/infra (e.g. compose/my-svc). Absolute paths rejected.
+        required: true
+        type: string
+      container_name:
+        description: Docker container name
+        required: true
+        type: string
+      health_mode:
+        description: running|docker|http|exec
+        required: false
+        type: string
+        default: running
+      health_command:
+        description: Command for health_mode=exec (no shell metacharacters)
+        required: false
+        type: string
+        default: ""
+      health_url:
+        description: URL for health_mode=http
+        required: false
+        type: string
+        default: ""
+      health_timeout:
+        description: Health wait window in seconds
+        required: false
+        type: number
+        default: 120
+      health_retries:
+        description: Health poll attempts
+        required: false
+        type: number
+        default: 12
+      enable_rollback:
+        description: Restore previous image if healthcheck fails
+        required: false
+        type: boolean
+        default: true
+      skip_git_pull:
+        description: Skip git pull --ff-only on the VPS
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: Validate remote deploy path without mutating the VPS
+        required: false
+        type: boolean
+        default: false
+      environment:
+        description: GitHub Environment on the CALLER repository (e.g. production)
+        required: false
+        type: string
+        default: production
+      notify:
+        description: Send Discord notifications
+        required: false
+        type: boolean
+        default: true
+      fail_on_notify_error:
+        description: Fail job if Discord notify fails
+        required: false
+        type: boolean
+        default: false
+      infra_repository:
+        description: Tooling repository for discord-notify action
+        required: false
+        type: string
+        default: YuriAPCarvalho/oracle-infra
+      infra_ref:
+        description: Versioned ref of oracle-infra tooling (prefer v1 tag; never main for production)
+        required: false
+        type: string
+        default: v1
+      deploy_script_path:
+        description: Fixed absolute path to ci-deploy-service.sh on the VPS
+        required: false
+        type: string
+        default: /opt/infra/scripts/ci-deploy-service.sh
+    secrets:
+      VPS_HOST:
+        required: true
+      VPS_USER:
+        required: true
+      VPS_SSH_PRIVATE_KEY:
+        required: true
+      VPS_SSH_HOST_KEY:
+        required: true
+      VPS_SSH_PORT:
+        required: false
+      DISCORD_WEBHOOK_URL:
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.service_name }}-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.service_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Environment protection must be applied on the CALLER (see templates).
+    # Avoid requiring a production Environment inside oracle-infra itself.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Validate inputs
+        env:
+          SERVICE_NAME: ${{ inputs.service_name }}
+          IMAGE: ${{ inputs.image }}
+          TAG: ${{ inputs.tag }}
+          COMPOSE_DIR: ${{ inputs.compose_dir }}
+          CONTAINER_NAME: ${{ inputs.container_name }}
+          HEALTH_MODE: ${{ inputs.health_mode }}
+          HEALTH_COMMAND: ${{ inputs.health_command }}
+          HEALTH_URL: ${{ inputs.health_url }}
+          HEALTH_TIMEOUT: ${{ inputs.health_timeout }}
+          HEALTH_RETRIES: ${{ inputs.health_retries }}
+          DEPLOY_SCRIPT: ${{ inputs.deploy_script_path }}
+          INFRA_REF: ${{ inputs.infra_ref }}
+        run: |
+          set -Eeuo pipefail
+          [[ "${SERVICE_NAME}" =~ ^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$ ]] || { echo "invalid service_name" >&2; exit 1; }
+          [[ "${CONTAINER_NAME}" =~ ^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$ ]] || { echo "invalid container_name" >&2; exit 1; }
+          [[ "${IMAGE}" =~ ^[a-z0-9._/-]+$ && "${IMAGE}" == */* && "${IMAGE}" != *..* && "${IMAGE}" != /* ]] || {
+            echo "invalid image" >&2
+            exit 1
+          }
+          [[ "${TAG}" =~ ^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$ ]] || { echo "invalid tag" >&2; exit 1; }
+          [[ "${COMPOSE_DIR}" =~ ^compose/[a-zA-Z0-9][a-zA-Z0-9._-]*$ ]] || {
+            echo "compose_dir must be relative like compose/<service>" >&2
+            exit 1
+          }
+          [[ "${COMPOSE_DIR}" != /* && "${COMPOSE_DIR}" != *..* ]] || {
+            echo "absolute paths and .. are forbidden in compose_dir" >&2
+            exit 1
+          }
+          case "${HEALTH_MODE}" in
+            running|docker|http|exec) ;;
+            *) echo "invalid health_mode" >&2; exit 1 ;;
+          esac
+          if [[ "${HEALTH_MODE}" == "http" && -z "${HEALTH_URL}" ]]; then
+            echo "health_url required for http mode" >&2
+            exit 1
+          fi
+          if [[ "${HEALTH_MODE}" == "exec" && -z "${HEALTH_COMMAND}" ]]; then
+            echo "health_command required for exec mode" >&2
+            exit 1
+          fi
+          [[ "${DEPLOY_SCRIPT}" == "/opt/infra/scripts/ci-deploy-service.sh" ]] || {
+            echo "deploy_script_path must remain the fixed VPS script path" >&2
+            exit 1
+          }
+          if [[ "${INFRA_REF}" == "main" || "${INFRA_REF}" == "master" ]]; then
+            echo "::warning::infra_ref=${INFRA_REF} is not recommended for production; prefer v1"
+          fi
+          if [[ "${TAG}" == "latest" ]]; then
+            echo "::warning::mutable tag 'latest'; prefer sha-<commit>"
+          fi
+
+      - name: Checkout infra tooling (versioned)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.infra_repository }}
+          ref: ${{ inputs.infra_ref }}
+          path: .ci-infra
+
+      - name: Notify deploy started
+        if: inputs.notify && !inputs.dry_run
+        continue-on-error: ${{ inputs.fail_on_notify_error == false }}
+        uses: ./.ci-infra/.github/actions/discord-notify
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          title: "Deploy iniciado"
+          service: ${{ inputs.service_name }}
+          environment: ${{ inputs.environment }}
+          status: started
+          commit: ${{ github.sha }}
+          author: ${{ github.actor }}
+          branch: ${{ github.ref_name }}
+          run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          message: "image=${{ inputs.image }}:${{ inputs.tag }}"
+          fail_on_error: ${{ inputs.fail_on_notify_error && 'true' || 'false' }}
+
+      - name: Prepare SSH materials
+        id: ssh
+        env:
+          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          VPS_SSH_HOST_KEY: ${{ secrets.VPS_SSH_HOST_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          key_file="$(mktemp)"
+          known_hosts_file="$(mktemp)"
+          printf '%s\n' "${VPS_SSH_PRIVATE_KEY}" | tr -d '\r' >"${key_file}"
+          chmod 600 "${key_file}"
+          # VPS_SSH_HOST_KEY must be a known_hosts line (or lines) for this host.
+          printf '%s\n' "${VPS_SSH_HOST_KEY}" | tr -d '\r' >"${known_hosts_file}"
+          chmod 600 "${known_hosts_file}"
+          if ! grep -Fq "${VPS_HOST}" "${known_hosts_file}"; then
+            echo "VPS_SSH_HOST_KEY does not mention VPS_HOST; refusing TOFU" >&2
+            exit 1
+          fi
+          echo "key_file=${key_file}" >> "${GITHUB_OUTPUT}"
+          echo "known_hosts_file=${known_hosts_file}" >> "${GITHUB_OUTPUT}"
+
+      - name: Write deploy config and run fixed remote command
+        id: deploy
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+          SSH_KEY_FILE: ${{ steps.ssh.outputs.key_file }}
+          KNOWN_HOSTS_FILE: ${{ steps.ssh.outputs.known_hosts_file }}
+          SERVICE_NAME: ${{ inputs.service_name }}
+          IMAGE: ${{ inputs.image }}
+          TAG: ${{ inputs.tag }}
+          COMPOSE_DIR: ${{ inputs.compose_dir }}
+          CONTAINER_NAME: ${{ inputs.container_name }}
+          HEALTH_MODE: ${{ inputs.health_mode }}
+          HEALTH_COMMAND: ${{ inputs.health_command }}
+          HEALTH_URL: ${{ inputs.health_url }}
+          HEALTH_TIMEOUT: ${{ inputs.health_timeout }}
+          HEALTH_RETRIES: ${{ inputs.health_retries }}
+          ENABLE_ROLLBACK: ${{ inputs.enable_rollback }}
+          SKIP_GIT_PULL: ${{ inputs.skip_git_pull }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          DEPLOY_SCRIPT: ${{ inputs.deploy_script_path }}
+          RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA_VALUE: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          VPS_SSH_PORT="${VPS_SSH_PORT:-22}"
+          config_local="$(mktemp)"
+          report_remote="/tmp/oracle-infra-deploy-report-${RUN_ID}.txt"
+          config_remote="/tmp/oracle-infra-deploy-config-${RUN_ID}.env"
+
+          {
+            echo "SERVICE_NAME=${SERVICE_NAME}"
+            echo "IMAGE_REPO=${IMAGE}"
+            echo "IMAGE_TAG=${TAG}"
+            echo "COMPOSE_REL=${COMPOSE_DIR}"
+            echo "CONTAINER_NAME=${CONTAINER_NAME}"
+            echo "HEALTH_MODE=${HEALTH_MODE}"
+            echo "HEALTH_TIMEOUT=${HEALTH_TIMEOUT}"
+            echo "HEALTH_RETRIES=${HEALTH_RETRIES}"
+            echo "ENABLE_ROLLBACK=${ENABLE_ROLLBACK}"
+            echo "SKIP_GIT_PULL=${SKIP_GIT_PULL}"
+            echo "DRY_RUN=${DRY_RUN}"
+            echo "REPORT_FILE=${report_remote}"
+            echo "GITHUB_SHA=${GITHUB_SHA_VALUE}"
+            echo "GITHUB_RUN_URL=${RUN_URL}"
+            if [[ -n "${HEALTH_COMMAND}" ]]; then
+              echo "HEALTH_COMMAND=${HEALTH_COMMAND}"
+            fi
+            if [[ -n "${HEALTH_URL}" ]]; then
+              echo "HEALTH_URL=${HEALTH_URL}"
+            fi
+          } >"${config_local}"
+          chmod 600 "${config_local}"
+
+          ssh_base_opts=(
+            -i "${SSH_KEY_FILE}"
+            -o IdentitiesOnly=yes
+            -o BatchMode=yes
+            -o StrictHostKeyChecking=yes
+            -o UserKnownHostsFile="${KNOWN_HOSTS_FILE}"
+          )
+
+          scp "${ssh_base_opts[@]}" \
+            -P "${VPS_SSH_PORT}" \
+            "${config_local}" \
+            "${VPS_USER}@${VPS_HOST}:${config_remote}"
+
+          # Fixed remote command: only allowlisted script + --config + /tmp path (run_id digits).
+          set +e
+          ssh "${ssh_base_opts[@]}" \
+            -p "${VPS_SSH_PORT}" \
+            "${VPS_USER}@${VPS_HOST}" \
+            -- \
+            /bin/bash /opt/infra/scripts/ci-deploy-service.sh --config "${config_remote}" \
+            | tee deploy-output.txt
+          deploy_exit=${PIPESTATUS[0]}
+          set -e
+
+          echo "exit_code=${deploy_exit}" >> "${GITHUB_OUTPUT}"
+
+          scp "${ssh_base_opts[@]}" \
+            -P "${VPS_SSH_PORT}" \
+            "${VPS_USER}@${VPS_HOST}:${report_remote}" \
+            deploy-report.txt 2>/dev/null || true
+
+          ssh "${ssh_base_opts[@]}" \
+            -p "${VPS_SSH_PORT}" \
+            "${VPS_USER}@${VPS_HOST}" \
+            -- \
+            /bin/rm -f "${config_remote}" \
+            || true
+
+          rm -f "${config_local}"
+
+          if [[ -f deploy-report.txt ]]; then
+            {
+              echo "## Deploy report"
+              echo ""
+              echo '```'
+              cat deploy-report.txt
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+          elif [[ -f deploy-output.txt ]]; then
+            {
+              echo "## Deploy output"
+              echo ""
+              echo '```'
+              tail -n 80 deploy-output.txt
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+          exit "${deploy_exit}"
+
+      - name: Cleanup SSH materials
+        if: always()
+        env:
+          SSH_KEY_FILE: ${{ steps.ssh.outputs.key_file }}
+          KNOWN_HOSTS_FILE: ${{ steps.ssh.outputs.known_hosts_file }}
+        run: |
+          set -Eeuo pipefail
+          for f in "${SSH_KEY_FILE}" "${KNOWN_HOSTS_FILE}"; do
+            if [[ -n "${f}" && -f "${f}" ]]; then
+              shred -u "${f}" 2>/dev/null || rm -f "${f}"
+            fi
+          done
+
+      - name: Detect rollback in report
+        id: outcome
+        if: always() && steps.deploy.outcome != 'skipped'
+        run: |
+          set -Eeuo pipefail
+          rollback=false
+          if [[ -f deploy-report.txt ]] && grep -q 'rollback_performed:1' deploy-report.txt; then
+            rollback=true
+          fi
+          echo "rollback=${rollback}" >> "${GITHUB_OUTPUT}"
+          if [[ "${{ steps.deploy.outcome }}" == "success" ]]; then
+            echo "status=success" >> "${GITHUB_OUTPUT}"
+          elif [[ "${rollback}" == "true" ]]; then
+            echo "status=rollback_success" >> "${GITHUB_OUTPUT}"
+          else
+            echo "status=failure" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Notify deploy result
+        if: always() && inputs.notify && !inputs.dry_run && steps.deploy.outcome != 'skipped'
+        continue-on-error: ${{ inputs.fail_on_notify_error == false }}
+        uses: ./.ci-infra/.github/actions/discord-notify
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          title: ${{ steps.outcome.outputs.status == 'success' && 'Deploy concluido' || (steps.outcome.outputs.rollback == 'true' && 'Rollback concluido' || 'Deploy falhou') }}
+          service: ${{ inputs.service_name }}
+          environment: ${{ inputs.environment }}
+          status: ${{ steps.outcome.outputs.status }}
+          commit: ${{ github.sha }}
+          author: ${{ github.actor }}
+          branch: ${{ github.ref_name }}
+          run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          message: "image=${{ inputs.image }}:${{ inputs.tag }}"
+          fail_on_error: ${{ inputs.fail_on_notify_error && 'true' || 'false' }}

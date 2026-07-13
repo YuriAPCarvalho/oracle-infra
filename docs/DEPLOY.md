@@ -47,7 +47,17 @@ O comando executa `git pull --ff-only`, valida todos os compose files, baixa ima
 
 ## Aplicacoes futuras
 
-Aplicacoes novas devem seguir `docs/APPLICATION_DEPLOYMENT.md` e o checklist em `docs/SERVICE_ONBOARDING_CHECKLIST.md`.
+Aplicacoes novas devem seguir `docs/APPLICATION_DEPLOYMENT.md`, `docs/CI_CD.md` e o checklist em `docs/SERVICE_ONBOARDING_CHECKLIST.md`.
+
+Fluxo de imagem e deploy:
+
+1. Build/push no GHCR via workflow reutilizavel (`reusable-docker-build.yml`).
+2. Deploy SSH controlado (`reusable-vps-deploy.yml` + `scripts/ci-deploy-service.sh`).
+3. Healthcheck + rollback de imagem + notificacao Discord.
+
+Templates de caller (nao ativos neste repo): `templates/github-actions/`.
+
+Secrets e chave SSH de deploy: `docs/GITHUB_SECRETS.md`.
 
 Na primeira fase de aplicacoes, somente estes servicos serao preparados para migracao futura:
 
@@ -57,3 +67,13 @@ Na primeira fase de aplicacoes, somente estes servicos serao preparados para mig
 Outros projetos nao serao migrados inicialmente.
 
 Use `templates/docker-service/` como base estrutural. Nao crie Compose definitivo sem requisitos reais do projeto, imagem validada em ARM64, segredos mapeados e rollback documentado.
+
+## Infra CI (este repositorio)
+
+```bash
+make validate
+make validate-ci
+make validate-workflows
+```
+
+O workflow `.github/workflows/infra.yml` valida scripts, Compose, templates e workflows. Ele **nao** faz deploy remoto nem envia notificacoes reais.
