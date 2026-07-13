@@ -1,0 +1,34 @@
+name: Infra
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: ShellCheck
+        run: |
+          find bootstrap scripts -name '*.sh' -print0 | xargs -0 shellcheck
+
+      - name: Bash syntax
+        run: |
+          find bootstrap scripts -name '*.sh' -print0 | xargs -0 -I{} bash -n {}
+
+      - name: Validate compose files
+        run: |
+          set -Eeuo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Validating ${file}"
+            docker compose -f "${file}" config --quiet
+          done < <(find compose -name 'compose.yml' -print0)

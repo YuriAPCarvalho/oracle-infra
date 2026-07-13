@@ -1,34 +1,54 @@
 # Oracle Infra
 
-Infraestrutura versionada da VPS Oracle Cloud ARM64.
+Infraestrutura versionada da VPS Oracle Cloud ARM64, baseada em Docker Compose.
 
 ## Ambiente
 
-- Ubuntu 22.04 LTS
+- Ubuntu 22.04+
 - ARM64 / Ampere A1
-- 2 OCPU
-- 12 GB RAM
-- 100 GB de armazenamento
-- Docker e Docker Compose
+- Docker Engine
+- Docker Compose Plugin
 - Traefik
 - Portainer
-- Uptime Kuma
 - Dozzle
-- Backups automatizados
+- Uptime Kuma
 
 ## Estrutura
 
-- `bootstrap/`: preparação e instalação do servidor
-- `compose/`: serviços Docker
-- `configs/`: configurações versionadas
-- `scripts/`: manutenção, backup e diagnóstico
-- `docs/`: documentação operacional
-- `data/`: dados persistentes não versionados
-- `secrets/`: segredos não versionados
+- `bootstrap/`: preparacao e instalacao inicial do servidor
+- `compose/`: compose files por servico
+- `configs/`: configuracoes versionadas
+- `scripts/`: manutencao, backup, restore e diagnostico
+- `docs/`: documentacao operacional
+- `data/`: dados locais nao versionados
+- `secrets/`: segredos nao versionados
 - `backups/`: backups locais
 - `logs/`: logs operacionais
 
-## Segurança
+Na VPS, o codigo fica em `/opt/infra` e os dados persistentes ficam em `/opt/docker`.
+
+## Comandos operacionais
+
+```bash
+make status
+make health
+make logs SERVICE=traefik
+make restart SERVICE=traefik
+make shell SERVICE=traefik
+make backup
+make update
+```
+
+Os scripts tambem podem ser executados diretamente com `bash scripts/<script>.sh`.
+
+## Documentacao
+
+- [Deploy](docs/DEPLOY.md)
+- [Backup](docs/BACKUP.md)
+- [Restore](docs/RESTORE.md)
+- [Operations](docs/OPERATIONS.md)
+
+## Seguranca
 
 Nunca versionar:
 
