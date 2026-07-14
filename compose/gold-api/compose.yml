@@ -28,10 +28,11 @@ services:
       - traefik.docker.network=proxy
       - traefik.http.middlewares.gold-api-https.redirectscheme.scheme=https
       - traefik.http.middlewares.gold-api-https.redirectscheme.permanent=true
-      - traefik.http.routers.gold-api-http.rule=Host(`${SERVICE_HOST:-scriptgold.com.br}`) || Host(`www.${SERVICE_HOST:-scriptgold.com.br}`)
+      # www is CNAME→apex at Cloudflare; keep Host apex-only so ACME HTTP-01 succeeds.
+      - traefik.http.routers.gold-api-http.rule=Host(`${SERVICE_HOST:-scriptgold.com.br}`)
       - traefik.http.routers.gold-api-http.entrypoints=web
       - traefik.http.routers.gold-api-http.middlewares=gold-api-https
-      - traefik.http.routers.gold-api.rule=Host(`${SERVICE_HOST:-scriptgold.com.br}`) || Host(`www.${SERVICE_HOST:-scriptgold.com.br}`)
+      - traefik.http.routers.gold-api.rule=Host(`${SERVICE_HOST:-scriptgold.com.br}`)
       - traefik.http.routers.gold-api.entrypoints=websecure
       - traefik.http.routers.gold-api.tls=true
       - traefik.http.routers.gold-api.tls.certresolver=letsencrypt
