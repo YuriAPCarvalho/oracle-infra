@@ -20,6 +20,10 @@ services:
     volumes:
       - /opt/docker/postgres/data:/var/lib/postgresql/data
 
+    # Localhost only — access via SSH tunnel (never publish 0.0.0.0).
+    ports:
+      - "127.0.0.1:5432:5432"
+
     networks:
       - internal
 

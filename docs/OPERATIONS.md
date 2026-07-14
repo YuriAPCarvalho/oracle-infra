@@ -117,3 +117,5 @@ bash scripts/postgres-create-db.sh --name dailybot --password '...'
 ```
 
 Detalhes: [services/postgres/README.md](../services/postgres/README.md).
+
+Acesso local (DBeaver etc.): bind `127.0.0.1:5432` + túnel SSH, por exemplo `-L 5432:127.0.0.1:5432`.

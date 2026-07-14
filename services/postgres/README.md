@@ -9,8 +9,8 @@ Instância única PostgreSQL 16 para todos os serviços da VPS.
 | Compose | `compose/postgres/` |
 | Imagem | `postgres:18-alpine` (alinha com dumps Railway atuais) |
 | Dados | `/opt/docker/postgres/data` |
-| Rede | `internal` somente |
-| Portas publicadas | **nenhuma** |
+| Rede | `internal` + bind `127.0.0.1:5432` (só localhost) |
+| Portas publicadas | `127.0.0.1:5432` — acesso via **túnel SSH**, nunca na internet |
 | Traefik | não |
 | Hostname Docker | `postgres` |
 
