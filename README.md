@@ -77,20 +77,19 @@ Concluida:
 
 ### Fase 2 - Observabilidade
 
-Proxima fase:
+Em andamento com ScriptGold:
 
-- configuracao operacional do Uptime Kuma;
-- monitoramento dos servicos existentes;
-- monitoramento futuro dos bots;
-- politica de alertas (canal a definir na fase de observabilidade).
+- Uptime Kuma monitors HTTP para `gold-api` / `gold-admin`;
+- Dozzle / Portainer para logs e ops;
+- `/health` nos apps.
 
 ### Fase 3 - DNS e HTTPS
 
-- dominio administrativo;
-- DNS;
-- certificados;
-- acesso seguro aos paineis;
-- nenhuma interface administrativa exposta sem protecao.
+Em andamento:
+
+- Traefik ACME Let's Encrypt (HTTP-01);
+- dominios publicos ScriptGold (`scriptgold.com.br`, `adm.scriptgold.com.br`);
+- Cloudflare proxy + Full (strict).
 
 ### Fase 4 - Deploy
 
@@ -103,16 +102,11 @@ Base **experimental** disponivel:
 - notificacoes Discord;
 - templates e documentacao.
 
-**Nao** considerar pronto para producao ate o primeiro deploy controlado de um servico real. Nenhum bot e migrado nesta base sozinha.
+### Fase 5 - Servicos
 
-### Fase 5 - Primeiros Servicos
-
-Somente:
-
-- bot de ponto ([Discovery](services/bot-ponto/DISCOVERY.md) concluida; implantacao pendente de criterios de producao);
-- bot do Discord.
-
-Outros projetos nao serao migrados inicialmente.
+- bot de ponto ([Discovery](services/bot-ponto/DISCOVERY.md));
+- bot do Discord;
+- **ScriptGold** (`gold-api` + `gold-admin`) — migracao Railway → Oracle.
 
 ## Documentacao
 

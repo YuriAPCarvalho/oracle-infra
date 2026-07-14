@@ -15,6 +15,8 @@ SERVICES=(
   postgres
   bot-ponto
   dailybot
+  gold-api
+  gold-admin
 )
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
@@ -101,6 +103,8 @@ service_compose_file() {
     bot-ponto) printf '%s\n' "${PROJECT_ROOT}/compose/bot-ponto/compose.yml" ;;
     postgres) printf '%s\n' "${PROJECT_ROOT}/compose/postgres/compose.yml" ;;
     dailybot) printf '%s\n' "${PROJECT_ROOT}/compose/dailybot/compose.yml" ;;
+    gold-api) printf '%s\n' "${PROJECT_ROOT}/compose/gold-api/compose.yml" ;;
+    gold-admin) printf '%s\n' "${PROJECT_ROOT}/compose/gold-admin/compose.yml" ;;
     *) return 1 ;;
   esac
 }
