@@ -44,6 +44,24 @@ validate-compose:
 			'CENTRAL_PASSWORD=placeholder' \
 			'BOT_DISCORD_WEBHOOK=' >> "$$bot_env"; \
 	fi; \
+	pg_env="compose/postgres/.env"; \
+	if [[ ! -f "$$pg_env" ]]; then \
+		cp compose/postgres/.env.example "$$pg_env"; \
+		printf '%s\n' 'POSTGRES_PASSWORD=placeholder-validate-only' >> "$$pg_env"; \
+	fi; \
+	daily_env="compose/dailybot/.env"; \
+	if [[ ! -f "$$daily_env" ]]; then \
+		cp compose/dailybot/.env.example "$$daily_env"; \
+		printf '%s\n' \
+			'SERVICE_IMAGE=dailybot:local' \
+			'DISCORD_TOKEN=placeholder' \
+			'CLIENT_ID=0' \
+			'GUILD_ID=0' \
+			'CHANNEL_DAILY=0' \
+			'CHANNEL_PO=0' \
+			'CHANNEL_ANIVERSARIOS=0' \
+			'DATABASE_URL=postgresql://dailybot:placeholder@postgres:5432/dailybot' >> "$$daily_env"; \
+	fi; \
 	for file in compose/*/compose.yml; do \
 		echo "Validating $$file"; \
 		docker compose -f "$$file" config -q; \

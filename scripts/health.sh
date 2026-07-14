@@ -177,6 +177,8 @@ check_persistent_dirs() {
     /opt/docker/bot-ponto/browser-state
     /opt/docker/bot-ponto/state
     /opt/docker/bot-ponto/screenshots
+    /opt/docker/postgres/data
+    /opt/docker/dailybot/storage
   )
 
   for dir in "${dirs[@]}"; do

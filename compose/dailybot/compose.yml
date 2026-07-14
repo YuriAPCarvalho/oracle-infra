@@ -1,0 +1,42 @@
+services:
+  dailybot:
+    image: ${SERVICE_IMAGE:-dailybot:local}
+    container_name: dailybot
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 60s
+    shm_size: "1gb"
+
+    security_opt:
+      - no-new-privileges:true
+
+    env_file:
+      - .env
+
+    environment:
+      TZ: America/Campo_Grande
+      TIMEZONE: America/Campo_Grande
+      NODE_ENV: production
+      # DATABASE_URL must point at shared postgres on internal network
+      # GLPI session file lives on the volume below
+
+    volumes:
+      - /opt/docker/dailybot/storage:/app/apps/bot/storage
+
+    networks:
+      - dailybot-net
+      - internal
+      - proxy
+
+networks:
+  dailybot-net:
+    name: dailybot-net
+    driver: bridge
+
+  internal:
+    external: true
+    name: internal
+
+  proxy:
+    external: true
+    name: proxy

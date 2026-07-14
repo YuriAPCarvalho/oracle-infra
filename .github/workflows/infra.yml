@@ -47,6 +47,25 @@ jobs:
               echo 'CENTRAL_PASSWORD=placeholder'
             } >> "${bot_env}"
           fi
+          pg_env="compose/postgres/.env"
+          if [[ ! -f "${pg_env}" ]]; then
+            cp compose/postgres/.env.example "${pg_env}"
+            echo 'POSTGRES_PASSWORD=placeholder-validate-only' >> "${pg_env}"
+          fi
+          daily_env="compose/dailybot/.env"
+          if [[ ! -f "${daily_env}" ]]; then
+            cp compose/dailybot/.env.example "${daily_env}"
+            {
+              echo 'SERVICE_IMAGE=dailybot:local'
+              echo 'DISCORD_TOKEN=placeholder'
+              echo 'CLIENT_ID=0'
+              echo 'GUILD_ID=0'
+              echo 'CHANNEL_DAILY=0'
+              echo 'CHANNEL_PO=0'
+              echo 'CHANNEL_ANIVERSARIOS=0'
+              echo 'DATABASE_URL=postgresql://dailybot:placeholder@postgres:5432/dailybot'
+            } >> "${daily_env}"
+          fi
           while IFS= read -r -d '' file; do
             echo "Validating ${file}"
             docker compose -f "${file}" config -q

@@ -22,6 +22,7 @@ Use este checklist antes de adicionar qualquer novo servico ao inventario operac
 - [ ] Rede definida (`internal` sem egress, ou bridge propria com outbound quando necessario — ver Discovery do servico).
 - [ ] Porta definida somente se necessaria.
 - [ ] Traefik habilitado somente com endpoint HTTP real.
+- [ ] Se usar banco: DB/role no Postgres compartilhado (`scripts/postgres-create-db.sh`), rede `internal`, migracoes documentadas.
 - [ ] Healthcheck implementado quando suportado (para workers: heartbeat arquivo / `exec`).
 - [ ] Se Playwright/Chromium: gate ARM64 documentado e aprovado.
 
