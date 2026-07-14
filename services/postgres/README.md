@@ -7,6 +7,7 @@ Instância única PostgreSQL 16 para todos os serviços da VPS.
 | Item | Valor |
 |------|--------|
 | Compose | `compose/postgres/` |
+| Imagem | `postgres:18-alpine` (alinha com dumps Railway atuais) |
 | Dados | `/opt/docker/postgres/data` |
 | Rede | `internal` somente |
 | Portas publicadas | **nenhuma** |
