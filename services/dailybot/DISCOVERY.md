@@ -7,6 +7,7 @@
 | Repo | `https://github.com/YuriAPCarvalho/DailyBot.git` |
 | Runtime | Node >= 22, Discord.js 14, Prisma 6, Playwright 1.61 |
 | HTTP | Não (web dashboard removida) |
+| Monitoramento | Uptime Kuma **Push** (`KUMA_PUSH_URL` na rede `proxy`) |
 | Banco | Postgres compartilhado (`dailybot`) |
 | Egress | Sim — Discord Gateway/API + GLPI HTTPS |
 | Traefik | Não |
@@ -28,5 +29,5 @@
 3. Smoke Playwright ARM64
 4. Slash commands registrados
 5. (Opcional) ciclo GLPI sem crash de session
-6. Kuma Push ok
+6. Kuma Push ok — monitor Push (~180s) + `KUMA_PUSH_URL` + bot enviando heartbeat a cada ~60s enquanto Discord ready (não usar HTTP/TCP)
 7. Railway parado
