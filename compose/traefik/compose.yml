@@ -7,13 +7,6 @@ services:
     security_opt:
       - no-new-privileges:true
 
-    # LETSENCRYPT_EMAIL is substituted by Compose from compose/traefik/.env
-    command:
-      - --configFile=/etc/traefik/traefik.yml
-      - --certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
-
     ports:
       - "80:80"
       - "443:443"
