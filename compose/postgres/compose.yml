@@ -21,11 +21,13 @@ services:
       - /opt/docker/postgres/data:/var/lib/postgresql/data
 
     # Localhost only — access via SSH tunnel (never publish 0.0.0.0).
+    # Needs a non-internal network: Docker blocks host binds on internal-only nets.
     ports:
       - "127.0.0.1:5432:5432"
 
     networks:
       - internal
+      - postgres-host
 
     healthcheck:
       test:
@@ -42,3 +44,7 @@ networks:
   internal:
     external: true
     name: internal
+
+  postgres-host:
+    name: postgres-host
+    driver: bridge
