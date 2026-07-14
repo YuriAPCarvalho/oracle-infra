@@ -174,6 +174,9 @@ check_persistent_dirs() {
     /opt/docker/traefik/logs
     /opt/docker/portainer/data
     /opt/docker/uptime-kuma/data
+    /opt/docker/bot-ponto/browser-state
+    /opt/docker/bot-ponto/state
+    /opt/docker/bot-ponto/screenshots
   )
 
   for dir in "${dirs[@]}"; do

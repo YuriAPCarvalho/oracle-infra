@@ -1,0 +1,32 @@
+{
+  "schedules": [
+    {
+      "name": "entrada",
+      "enabled": true,
+      "targetTime": "07:30",
+      "variationMinutes": 5,
+      "daysOfWeek": [1, 2, 3, 4, 5]
+    },
+    {
+      "name": "saida_almoco",
+      "enabled": true,
+      "targetTime": "11:30",
+      "variationMinutes": 5,
+      "daysOfWeek": [1, 2, 3, 4, 5]
+    },
+    {
+      "name": "retorno_almoco",
+      "enabled": true,
+      "targetTime": "12:35",
+      "variationMinutes": 5,
+      "daysOfWeek": [1, 2, 3, 4, 5]
+    },
+    {
+      "name": "saida",
+      "enabled": true,
+      "targetTime": "16:40",
+      "variationMinutes": 5,
+      "daysOfWeek": [1, 2, 3, 4, 5]
+    }
+  ]
+}

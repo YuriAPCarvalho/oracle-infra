@@ -19,10 +19,11 @@ Use este checklist antes de adicionar qualquer novo servico ao inventario operac
 - [ ] `.env.example` criado sem segredos reais.
 - [ ] `.env` real criado somente na VPS ou no gerenciador de segredos.
 - [ ] Persistencia definida em `/opt/docker/<service>`, se necessaria.
-- [ ] Rede definida.
+- [ ] Rede definida (`internal` sem egress, ou bridge propria com outbound quando necessario — ver Discovery do servico).
 - [ ] Porta definida somente se necessaria.
 - [ ] Traefik habilitado somente com endpoint HTTP real.
-- [ ] Healthcheck implementado quando suportado.
+- [ ] Healthcheck implementado quando suportado (para workers: heartbeat arquivo / `exec`).
+- [ ] Se Playwright/Chromium: gate ARM64 documentado e aprovado.
 
 ## Operacao
 

@@ -109,7 +109,7 @@ Base **experimental** disponivel:
 
 Somente:
 
-- bot de ponto;
+- bot de ponto ([Discovery](services/bot-ponto/DISCOVERY.md) concluida; implantacao pendente de criterios de producao);
 - bot do Discord.
 
 Outros projetos nao serao migrados inicialmente.
@@ -126,6 +126,8 @@ Outros projetos nao serao migrados inicialmente.
 - [Rollback](docs/ROLLBACK.md)
 - [GitHub Secrets](docs/GITHUB_SECRETS.md)
 - [Service Onboarding Checklist](docs/SERVICE_ONBOARDING_CHECKLIST.md)
+- [Bot de ponto — Discovery](services/bot-ponto/DISCOVERY.md)
+- [Bot de ponto — README](services/bot-ponto/README.md)
 
 ## Seguranca
 

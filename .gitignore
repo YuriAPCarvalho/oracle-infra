@@ -21,3 +21,4 @@ logs/*
 acme.json
 
 .tools/
+.cursor/

@@ -32,11 +32,21 @@ Callers devem pinar `YuriAPCarvalho/oracle-infra` com tag versionada (`@v1`), na
 - Cada servico tera seu proprio Compose.
 - Banco nao deve ser criado sem requisito real.
 - Portas nao serao expostas sem necessidade.
-- Bots sem interface HTTP devem ficar apenas na rede `internal`.
+- Bots sem interface HTTP e **sem necessidade de egress** podem ficar apenas na rede `internal`.
+- Bots/workers que precisam de HTTPS de saída (portais externos, webhooks) devem usar uma **bridge própria com outbound**, sem portas publicadas e sem Traefik. Exemplo documentado: [bot de ponto](../services/bot-ponto/DISCOVERY.md) (`bot-ponto-net`).
 - Traefik sera usado apenas quando houver endpoint HTTP real.
 - Cada aplicacao devera ter rollback documentado.
 - Producao prefere tag imutavel `sha-<commit>` no GHCR.
-- Notificacoes de pipeline via Discord webhook (nao Telegram).
+- Notificacoes de pipeline via Discord webhook (nao Telegram). Webhooks de **pipeline** e de **bot funcional** devem ser distintos.
+
+## Rede para workers com outbound
+
+Excecao documentada ao padrao `internal`:
+
+- Servicos **sem** egress: rede `internal`.
+- Servicos **com** egress necessario (portais HTTPS, webhooks): bridge propria do projeto, sem portas e sem Traefik.
+
+Referencia: [Bot de ponto — Discovery](../services/bot-ponto/DISCOVERY.md) secao 31.2.
 
 ## Padrao de Compose
 

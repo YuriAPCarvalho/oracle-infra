@@ -34,6 +34,16 @@ shellcheck:
 
 validate-compose:
 	@set -Eeuo pipefail; \
+	bot_env="compose/bot-ponto/.env"; \
+	if [[ ! -f "$$bot_env" ]]; then \
+		cp compose/bot-ponto/.env.example "$$bot_env"; \
+		printf '%s\n' \
+			'SERVICE_IMAGE=bot-ponto:local' \
+			'CENTRAL_URL=https://example.invalid/0' \
+			'CENTRAL_NUMERO_FOLHA=0' \
+			'CENTRAL_PASSWORD=placeholder' \
+			'BOT_DISCORD_WEBHOOK=' >> "$$bot_env"; \
+	fi; \
 	for file in compose/*/compose.yml; do \
 		echo "Validating $$file"; \
 		docker compose -f "$$file" config -q; \

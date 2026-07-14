@@ -104,4 +104,4 @@ Novos servicos so entram no inventario operacional depois de existir Compose rea
 - Makefile e GitHub Actions: devem ganhar apenas targets e validacoes que reflitam servicos reais.
 - Uptime Kuma: deve monitorar container, heartbeat ou endpoint HTTP conforme o tipo do bot.
 
-Bots sem HTTP devem ficar apenas na rede `internal`. Traefik deve ser usado somente quando houver endpoint HTTP real.
+Bots sem HTTP e sem egress ficam apenas na rede `internal`. Workers que precisam de outbound (ex.: [bot de ponto](../services/bot-ponto/DISCOVERY.md)) usam bridge propria com egress, sem Traefik e sem portas publicadas. Traefik somente com endpoint HTTP real.

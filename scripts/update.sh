@@ -30,7 +30,10 @@ main() {
 
   section "Pulling images"
   while IFS= read -r compose_file; do
-    docker compose -f "${compose_file}" pull
+    # Local-only images (e.g. bot-ponto:local) have no registry remotes.
+    if ! docker compose -f "${compose_file}" pull; then
+      warn "Pull skipped/failed for ${compose_file} (local image or registry unavailable)"
+    fi
   done < <(compose_files)
 
   section "Applying compose services"

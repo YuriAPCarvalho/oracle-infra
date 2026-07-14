@@ -1,30 +1,33 @@
 # Bot de Ponto
 
-Estrutura documental para levantamento tecnico antes do deploy. Nenhum container deve ser criado ate que os requisitos reais sejam conhecidos.
+Fonte: aplicação `secullum-web-automate` (npm `central-funcionario-bot`).
+Levantamento: [DISCOVERY.md](./DISCOVERY.md).
 
-## Informacoes Necessarias
+**Status:** experimental — primeiro deploy na VPS com imagem local ARM64; GHCR + CI caller ativos no repo da app. Critérios 31.13 ainda não ficam todos verdes até smoke Chromium + janela real validados.
 
-- Repositorio.
-- Linguagem e runtime.
-- Comando de build.
-- Comando de start.
-- Necessidade de banco.
-- Necessidade de armazenamento persistente.
-- Existencia de API ou painel HTTP.
-- Porta interna, se houver.
-- Health endpoint, se houver.
-- Agendamentos ou cron.
-- Timezone.
-- Tokens e segredos.
-- Consumo esperado de CPU, RAM e disco.
-- Estrategia de backup.
-- Estrategia de rollback.
-- Origem atual do servico.
-- Dependencias externas.
+## Compose
 
-## Decisoes Pendentes
+- Path: `compose/bot-ponto/`
+- Rede: `bot-ponto-net` (egress) + `proxy` (Push Kuma / DNS interno)
+- Dados: `/opt/docker/bot-ponto/{browser-state,state,screenshots}`
+- Sem Traefik / sem portas publicadas
 
-- Se o bot precisa de rede `proxy` ou apenas `internal`.
-- Se existe endpoint HTTP real para Uptime Kuma.
-- Se dados locais entram no backup de `/opt/docker`.
-- Como validar deploy e rollback sem perda de estado.
+## Deploy rápido (VPS)
+
+```bash
+sudo mkdir -p /opt/docker/bot-ponto/{browser-state,state,screenshots}
+# Preencher compose/bot-ponto/.env (SERVICE_IMAGE, CENTRAL_*, BOT_DISCORD_WEBHOOK, ALLOW_FINAL_CLICK, KUMA_PUSH_URL)
+cd /opt/infra
+docker compose -f compose/bot-ponto/compose.yml up -d
+docker logs -f bot-ponto
+```
+
+## Monitoramento
+
+- Docker HEALTHCHECK via `heartbeat.json`
+- Uptime Kuma Push (`KUMA_PUSH_URL`) a cada ~5 min
+- Discord do bot: `BOT_DISCORD_WEBHOOK` (separado do CI)
+
+## Variáveis
+
+Ver [compose/bot-ponto/.env.example](../../compose/bot-ponto/.env.example). Segredos só na VPS.

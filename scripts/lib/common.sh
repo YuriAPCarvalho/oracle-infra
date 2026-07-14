@@ -12,6 +12,7 @@ SERVICES=(
   portainer
   dozzle
   uptime-kuma
+  bot-ponto
 )
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
@@ -95,6 +96,7 @@ service_compose_file() {
     portainer) printf '%s\n' "${PROJECT_ROOT}/compose/portainer/compose.yml" ;;
     dozzle) printf '%s\n' "${PROJECT_ROOT}/compose/dozzle/compose.yml" ;;
     uptime-kuma) printf '%s\n' "${PROJECT_ROOT}/compose/uptime-kuma/compose.yml" ;;
+    bot-ponto) printf '%s\n' "${PROJECT_ROOT}/compose/bot-ponto/compose.yml" ;;
     *) return 1 ;;
   esac
 }
