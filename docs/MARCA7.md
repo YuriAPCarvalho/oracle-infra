@@ -54,6 +54,10 @@ Repos `CristinaMonica/marca7-estoque-api` e `marca7-estoque-app`: workflow `buil
 
 Secrets: ver [GITHUB_SECRETS.md](GITHUB_SECRETS.md).
 
+### GHCR (pull na VPS)
+
+Pacotes em `ghcr.io/cristinamonica/*` nascem **privados**. Para o deploy SSH puxar sem login na VPS, marque cada package como **Public** (Package settings → Change visibility), ou configure `docker login ghcr.io` na VPS com um PAT `read:packages`.
+
 ## Monitoramento
 
 ```bash

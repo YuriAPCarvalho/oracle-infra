@@ -238,6 +238,23 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
 
+      # Private-by-default packages break anonymous docker pull on the VPS.
+      - name: Make GHCR package public
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_NAME: ${{ inputs.image_name }}
+        run: |
+          set -Eeuo pipefail
+          OWNER="${IMAGE_NAME%%/*}"
+          PKG="${IMAGE_NAME#*/}"
+          if gh api --method PUT "orgs/${OWNER}/packages/container/${PKG}/visibility" -f visibility=public; then
+            echo "Package orgs/${OWNER}/${PKG} -> public"
+          elif gh api --method PUT "users/${OWNER}/packages/container/${PKG}/visibility" -f visibility=public; then
+            echo "Package users/${OWNER}/${PKG} -> public"
+          else
+            echo "::warning::Could not set GHCR visibility to public for ${IMAGE_NAME}"
+          fi
+
       - name: Summary
         run: |
           set -Eeuo pipefail
