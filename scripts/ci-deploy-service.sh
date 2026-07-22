@@ -444,14 +444,17 @@ apply_compose() {
   fi
 
   info "Pulling image: ${image_ref}"
-  docker pull "${image_ref}"
+  if ! docker pull "${image_ref}"; then
+    fail "docker pull failed for ${image_ref}"
+    return 1
+  fi
 
   info "Applying compose up -d"
   (
     cd "${COMPOSE_DIR}"
     SERVICE_IMAGE="${image_ref}" SERVICE_NAME="${CONTAINER_NAME}" \
       docker compose -f "${COMPOSE_FILE}" up -d --pull never
-  )
+  ) || return 1
 }
 
 check_health_once() {

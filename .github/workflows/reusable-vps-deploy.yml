@@ -126,6 +126,7 @@ jobs:
     # Avoid requiring a production Environment inside oracle-infra itself.
     permissions:
       contents: read
+      packages: read
 
     steps:
       - name: Validate inputs
@@ -254,6 +255,8 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           GITHUB_SHA_VALUE: ${{ github.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GHCR_USER: ${{ github.repository_owner }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -Eeuo pipefail
           umask 077
@@ -299,6 +302,15 @@ jobs:
             "${config_local}" \
             "${VPS_USER}@${VPS_HOST}:${config_remote}"
 
+          # Ephemeral GHCR auth for private packages (token never written to disk on VPS).
+          if [[ "${DRY_RUN}" != "true" ]]; then
+            printf '%s\n' "${GHCR_TOKEN}" | ssh "${ssh_base_opts[@]}" \
+              -p "${VPS_SSH_PORT}" \
+              "${VPS_USER}@${VPS_HOST}" \
+              -- \
+              docker login ghcr.io -u "${GHCR_USER}" --password-stdin
+          fi
+
           # Fixed remote command: only allowlisted script + --config + /tmp path (run_id digits).
           set +e
           ssh "${ssh_base_opts[@]}" \
@@ -321,7 +333,7 @@ jobs:
             -p "${VPS_SSH_PORT}" \
             "${VPS_USER}@${VPS_HOST}" \
             -- \
-            /bin/rm -f "${config_remote}" \
+            /bin/bash -c 'docker logout ghcr.io >/dev/null 2>&1 || true; /bin/rm -f "'"${config_remote}"'"' \
             || true
 
           rm -f "${config_local}"

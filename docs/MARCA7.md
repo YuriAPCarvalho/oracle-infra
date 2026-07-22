@@ -56,7 +56,7 @@ Secrets: ver [GITHUB_SECRETS.md](GITHUB_SECRETS.md).
 
 ### GHCR (pull na VPS)
 
-Pacotes em `ghcr.io/cristinamonica/*` nascem **privados**. Para o deploy SSH puxar sem login na VPS, marque cada package como **Public** (Package settings → Change visibility), ou configure `docker login ghcr.io` na VPS com um PAT `read:packages`.
+Pacotes em `ghcr.io/cristinamonica/*` nascem **privados**. O deploy SSH faz `docker login` efêmero com `GITHUB_TOKEN` (`packages: read`) antes do pull e `docker logout` depois. Opcionalmente, marque o package como **Public** no GitHub para pulls manuais sem login.
 
 ## Monitoramento
 
