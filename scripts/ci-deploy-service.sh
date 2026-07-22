@@ -444,17 +444,13 @@ apply_compose() {
   fi
 
   info "Pulling image: ${image_ref}"
-  (
-    cd "${COMPOSE_DIR}"
-    SERVICE_IMAGE="${image_ref}" SERVICE_NAME="${CONTAINER_NAME}" \
-      docker compose -f "${COMPOSE_FILE}" pull
-  )
+  docker pull "${image_ref}"
 
   info "Applying compose up -d"
   (
     cd "${COMPOSE_DIR}"
     SERVICE_IMAGE="${image_ref}" SERVICE_NAME="${CONTAINER_NAME}" \
-      docker compose -f "${COMPOSE_FILE}" up -d
+      docker compose -f "${COMPOSE_FILE}" up -d --pull never
   )
 }
 

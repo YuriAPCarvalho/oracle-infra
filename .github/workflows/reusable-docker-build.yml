@@ -243,16 +243,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_NAME: ${{ inputs.image_name }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
           set -Eeuo pipefail
-          OWNER="${IMAGE_NAME%%/*}"
           PKG="${IMAGE_NAME#*/}"
-          if gh api --method PUT "orgs/${OWNER}/packages/container/${PKG}/visibility" -f visibility=public; then
-            echo "Package orgs/${OWNER}/${PKG} -> public"
-          elif gh api --method PUT "users/${OWNER}/packages/container/${PKG}/visibility" -f visibility=public; then
-            echo "Package users/${OWNER}/${PKG} -> public"
+          # Prefer caller org/user casing (CristinaMonica), not the lowercase image path.
+          if gh api --method PUT "orgs/${REPO_OWNER}/packages/container/${PKG}/visibility" -f visibility=public; then
+            echo "Package orgs/${REPO_OWNER}/${PKG} -> public"
+          elif gh api --method PUT "users/${REPO_OWNER}/packages/container/${PKG}/visibility" -f visibility=public; then
+            echo "Package users/${REPO_OWNER}/${PKG} -> public"
           else
-            echo "::warning::Could not set GHCR visibility to public for ${IMAGE_NAME}"
+            echo "::warning::Could not set GHCR visibility to public for ${REPO_OWNER}/${PKG}"
           fi
 
       - name: Summary
