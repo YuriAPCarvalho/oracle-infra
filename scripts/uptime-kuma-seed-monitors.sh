@@ -85,6 +85,9 @@ fi
 insert_http_monitor "traefik" "http://traefik:8080/api/overview" 0
 insert_http_monitor "portainer" "https://portainer:9443/api/status" 1
 insert_http_monitor "dozzle" "http://dozzle:8080" 0
+# Marca7 — prefer public HTTPS once DNS is live; fall back to container DNS on proxy.
+insert_http_monitor "marca7-api" "http://marca7-api:4000/health" 0
+insert_http_monitor "marca7-app" "http://marca7-app:3000/" 0
 
 info "Starting uptime-kuma"
 docker compose -f "${COMPOSE_FILE}" start

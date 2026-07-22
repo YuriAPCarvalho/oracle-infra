@@ -19,7 +19,7 @@ DB_FILE="${DATA_DIR}/kuma.db"
 COMPOSE_FILE="$(service_compose_file uptime-kuma)"
 ENV_FILE="${PROJECT_ROOT}/compose/uptime-kuma/.env"
 NOTIF_NAME="discord-infra"
-MONITOR_NAMES=(traefik portainer dozzle)
+MONITOR_NAMES=(traefik portainer dozzle marca7-api marca7-app)
 
 require_command docker
 

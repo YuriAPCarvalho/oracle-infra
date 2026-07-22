@@ -62,6 +62,22 @@ validate-compose:
 			'CHANNEL_ANIVERSARIOS=0' \
 			'DATABASE_URL=postgresql://dailybot:placeholder@postgres:5432/dailybot' >> "$$daily_env"; \
 	fi; \
+	minio_env="compose/minio/.env"; \
+	if [[ ! -f "$$minio_env" ]]; then \
+		cp compose/minio/.env.example "$$minio_env"; \
+		printf '%s\n' 'MINIO_ROOT_PASSWORD=placeholder-validate-only' >> "$$minio_env"; \
+	fi; \
+	m7api_env="compose/marca7-api/.env"; \
+	if [[ ! -f "$$m7api_env" ]]; then \
+		cp compose/marca7-api/.env.example "$$m7api_env"; \
+		sed -i.bak 's/CHANGE_ME/placeholder-validate-only/g' "$$m7api_env" 2>/dev/null || \
+			sed -i '' 's/CHANGE_ME/placeholder-validate-only/g' "$$m7api_env"; \
+		rm -f "$$m7api_env.bak"; \
+	fi; \
+	m7app_env="compose/marca7-app/.env"; \
+	if [[ ! -f "$$m7app_env" ]]; then \
+		cp compose/marca7-app/.env.example "$$m7app_env"; \
+	fi; \
 	for file in compose/*/compose.yml; do \
 		echo "Validating $$file"; \
 		docker compose -f "$$file" config -q; \

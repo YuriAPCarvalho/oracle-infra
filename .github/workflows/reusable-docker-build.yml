@@ -40,6 +40,11 @@ on:
         required: false
         type: string
         default: ghcr.io
+      build_args:
+        description: Docker build-args (newline-separated KEY=VALUE)
+        required: false
+        type: string
+        default: ""
     outputs:
       image:
         description: Fully qualified image without tag
@@ -126,6 +131,7 @@ jobs:
           load: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ inputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
@@ -227,6 +233,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ inputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false

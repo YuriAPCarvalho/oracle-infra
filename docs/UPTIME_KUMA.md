@@ -28,6 +28,8 @@ Monitores criados (rede Docker `proxy`):
 | `traefik` | `http://traefik:8080/api/overview` | API do dashboard |
 | `portainer` | `https://portainer:9443/api/status` | TLS self-signed (`ignore_tls`) |
 | `dozzle` | `http://dozzle:8080` | UI de logs |
+| `marca7-api` | `http://marca7-api:4000/health` | Após o deploy Marca7 |
+| `marca7-app` | `http://marca7-app:3000/` | Após o deploy Marca7 |
 
 O script é idempotente: não duplica monitores com o mesmo nome.
 
