@@ -114,6 +114,7 @@ Base **experimental** disponivel:
 - [Backup](docs/BACKUP.md)
 - [Restore](docs/RESTORE.md)
 - [Operations](docs/OPERATIONS.md)
+- [Uptime Kuma](docs/UPTIME_KUMA.md)
 - [Application Deployment](docs/APPLICATION_DEPLOYMENT.md)
 - [CI/CD](docs/CI_CD.md)
 - [Discord Notifications](docs/DISCORD_NOTIFICATIONS.md)

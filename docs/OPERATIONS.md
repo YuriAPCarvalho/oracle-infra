@@ -18,6 +18,14 @@ make health
 
 Valida Docker, Compose, disco, RAM, swap, CPU, load average, internet, DNS, servicos, redes `proxy` e `internal`, volumes, diretorios persistentes e socket Docker.
 
+## Uptime Kuma
+
+Painel em `127.0.0.1:8082` (tunel SSH). Monitores da stack: ver [UPTIME_KUMA.md](UPTIME_KUMA.md).
+
+```bash
+bash scripts/uptime-kuma-seed-monitors.sh
+```
+
 ## Logs
 
 ```bash

@@ -44,7 +44,7 @@ docker compose -f "${COMPOSE_FILE}" up -d
 log "Aguardando inicialização"
 for attempt in {1..30}; do
   if curl --silent --fail --max-time 3 \
-    http://127.0.0.1:3001 >/dev/null; then
+    http://127.0.0.1:8082 >/dev/null; then
     echo "Uptime Kuma está respondendo."
     break
   fi
@@ -62,5 +62,5 @@ docker compose -f "${COMPOSE_FILE}" ps
 
 echo
 echo "Instalação concluída."
-echo "Acesso local da VPS: http://127.0.0.1:3001"
+echo "Acesso local da VPS: http://127.0.0.1:8082"
 echo "Use túnel SSH para acessar pelo seu computador."
