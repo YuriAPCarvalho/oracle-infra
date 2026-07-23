@@ -20,6 +20,20 @@ services:
     networks:
       - proxy
 
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.middlewares.dozzle-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.dozzle-https.redirectscheme.permanent=true
+      - traefik.http.routers.dozzle-http.rule=Host(`${SERVICE_HOST:-dozzle.marca7.tech}`)
+      - traefik.http.routers.dozzle-http.entrypoints=web
+      - traefik.http.routers.dozzle-http.middlewares=dozzle-https
+      - traefik.http.routers.dozzle.rule=Host(`${SERVICE_HOST:-dozzle.marca7.tech}`)
+      - traefik.http.routers.dozzle.entrypoints=websecure
+      - traefik.http.routers.dozzle.tls=true
+      - traefik.http.routers.dozzle.tls.certresolver=letsencrypt
+      - traefik.http.services.dozzle.loadbalancer.server.port=8080
+
 networks:
   proxy:
     external: true

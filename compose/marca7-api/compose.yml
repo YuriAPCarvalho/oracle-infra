@@ -27,10 +27,10 @@ services:
       - traefik.docker.network=proxy
       - traefik.http.middlewares.marca7-api-https.redirectscheme.scheme=https
       - traefik.http.middlewares.marca7-api-https.redirectscheme.permanent=true
-      - traefik.http.routers.marca7-api-http.rule=Host(`${SERVICE_HOST:-api.marca7.com.br}`)
+      - traefik.http.routers.marca7-api-http.rule=Host(`${SERVICE_HOST:-gestoragro-api.marca7.tech}`)
       - traefik.http.routers.marca7-api-http.entrypoints=web
       - traefik.http.routers.marca7-api-http.middlewares=marca7-api-https
-      - traefik.http.routers.marca7-api.rule=Host(`${SERVICE_HOST:-api.marca7.com.br}`)
+      - traefik.http.routers.marca7-api.rule=Host(`${SERVICE_HOST:-gestoragro-api.marca7.tech}`)
       - traefik.http.routers.marca7-api.entrypoints=websecure
       - traefik.http.routers.marca7-api.tls=true
       - traefik.http.routers.marca7-api.tls.certresolver=letsencrypt

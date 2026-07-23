@@ -3,6 +3,7 @@ services:
     image: portainer/portainer-ce:2.38.1
     container_name: portainer
     restart: unless-stopped
+    command: --http-enabled
 
     security_opt:
       - no-new-privileges:true
@@ -16,6 +17,20 @@ services:
 
     networks:
       - proxy
+
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.middlewares.portainer-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.portainer-https.redirectscheme.permanent=true
+      - traefik.http.routers.portainer-http.rule=Host(`${SERVICE_HOST:-portainer.marca7.tech}`)
+      - traefik.http.routers.portainer-http.entrypoints=web
+      - traefik.http.routers.portainer-http.middlewares=portainer-https
+      - traefik.http.routers.portainer.rule=Host(`${SERVICE_HOST:-portainer.marca7.tech}`)
+      - traefik.http.routers.portainer.entrypoints=websecure
+      - traefik.http.routers.portainer.tls=true
+      - traefik.http.routers.portainer.tls.certresolver=letsencrypt
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
 
 networks:
   proxy:

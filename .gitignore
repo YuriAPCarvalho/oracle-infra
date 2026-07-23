@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+.cloudflare_token
 
 secrets/*
 !secrets/.gitkeep

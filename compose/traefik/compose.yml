@@ -21,6 +21,20 @@ services:
     networks:
       - proxy
 
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.middlewares.traefik-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.traefik-https.redirectscheme.permanent=true
+      - traefik.http.routers.traefik-http.rule=Host(`${SERVICE_HOST:-traefik.marca7.tech}`)
+      - traefik.http.routers.traefik-http.entrypoints=web
+      - traefik.http.routers.traefik-http.middlewares=traefik-https
+      - traefik.http.routers.traefik.rule=Host(`${SERVICE_HOST:-traefik.marca7.tech}`)
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik.service=api@internal
+
 networks:
   proxy:
     external: true
