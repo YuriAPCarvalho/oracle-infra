@@ -247,7 +247,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           PKG="${IMAGE_NAME#*/}"
-          # Prefer caller org/user casing (CristinaMonica), not the lowercase image path.
+          # Prefer caller org/user casing (Marca7-Tech), not the lowercase image path.
           if gh api --method PUT "orgs/${REPO_OWNER}/packages/container/${PKG}/visibility" -f visibility=public; then
             echo "Package orgs/${REPO_OWNER}/${PKG} -> public"
           elif gh api --method PUT "users/${REPO_OWNER}/packages/container/${PKG}/visibility" -f visibility=public; then

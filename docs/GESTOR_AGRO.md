@@ -1,6 +1,8 @@
-# Marca7 Estoque (produção — Kinghost)
+# Gestor Agro (produção — Hostinger)
 
-API Nest + APP Next + Postgres compartilhado + MinIO na VPS `191.252.212.69`.
+API Nest + APP Next + Postgres compartilhado + MinIO na VPS `179.197.238.11`.
+
+Produto: **Gestor Agro** (org [Marca7-Tech](https://github.com/Marca7-Tech)).
 
 ## Domínios
 
@@ -10,7 +12,7 @@ API Nest + APP Next + Postgres compartilhado + MinIO na VPS `191.252.212.69`.
 | APP | `sistema.marca7.com.br` |
 | MinIO (S3 path-style) | `s3.marca7.com.br` |
 
-DNS (Cloudflare/UOL): registros A apontando para o IP da VPS. HTTPS via Traefik ACME após o DNS.
+DNS (Cloudflare): registros A apontando para o IP da VPS. HTTPS via Traefik ACME após o DNS.
 
 ## Compose
 
@@ -18,8 +20,8 @@ DNS (Cloudflare/UOL): registros A apontando para o IP da VPS. HTTPS via Traefik 
 |------|--------|
 | `compose/postgres/` | DB compartilhado |
 | `compose/minio/` | Object storage |
-| `compose/marca7-api/` | Nest API |
-| `compose/marca7-app/` | Next APP |
+| `compose/marca7-api/` | Nest API (Gestor Agro) |
+| `compose/marca7-app/` | Next APP (Gestor Agro) |
 
 ## Bootstrap VPS
 
@@ -41,7 +43,7 @@ cp compose/marca7-api/.env.example compose/marca7-api/.env
 # MINIO_ACCESS_KEY / MINIO_SECRET_KEY = mesmos do MinIO root (ou user dedicado)
 chmod 600 compose/marca7-api/.env compose/minio/.env compose/postgres/.env
 
-# Imagens: via GitHub Actions (push master) ou pull manual GHCR
+# Imagens: via GitHub Actions (push main) ou pull manual GHCR
 ```
 
 Seed de cadastro (admin, catálogos, produtos, fazendas) roda no entrypoint da API (`prisma migrate deploy` + `db seed`). **Não** popula entrada/saída/inventário/nota/remessa.
@@ -50,18 +52,18 @@ Admin seed: CPF `00000000000` / senha `admin123` — **trocar após o primeiro l
 
 ## CI/CD
 
-Repos `CristinaMonica/marca7-estoque-api` e `marca7-estoque-app`: workflow `build-and-deploy.yml` em push `master` (linux/amd64, GHCR, deploy SSH via `oracle-infra@v1`).
+Repos `Marca7-Tech/marca7-gestor-agro-api` e `marca7-gestor-agro-app`: workflow `build-and-deploy.yml` em push `main` (linux/amd64, GHCR, deploy SSH via `oracle-infra@v1`).
 
 Secrets: ver [GITHUB_SECRETS.md](GITHUB_SECRETS.md).
 
 ### GHCR (pull na VPS)
 
-Pacotes em `ghcr.io/cristinamonica/*` nascem **privados**. O deploy SSH faz `docker login` efêmero com `GITHUB_TOKEN` (`packages: read`) antes do pull e `docker logout` depois. Opcionalmente, marque o package como **Public** no GitHub para pulls manuais sem login.
+Pacotes em `ghcr.io/marca7-tech/*`. O deploy SSH faz `docker login` efêmero com `GITHUB_TOKEN` (`packages: read`) antes do pull e `docker logout` depois. Com repos públicos, packages costumam ficar puxáveis sem login manual.
 
 ## Monitoramento
 
 ```bash
-bash scripts/uptime-kuma-seed-monitors.sh   # inclui marca7-api / marca7-app quando DNS/HTTP responder
+bash scripts/uptime-kuma-seed-monitors.sh   # inclui marca7-api / marca7-app (containers Gestor Agro)
 ```
 
-Monitores HTTP: `https://api.marca7.com.br/health` e `https://sistema.marca7.com.br/` (após DNS). Até lá, health local: `http://127.0.0.1:4000/health` e `http://127.0.0.1:3000/`.
+Monitores HTTP públicos: `https://api.marca7.com.br/health` e `https://sistema.marca7.com.br/` (após DNS). Até lá, health local: `http://127.0.0.1:4000/health` e `http://127.0.0.1:3000/`.

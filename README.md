@@ -115,7 +115,7 @@ Base **experimental** disponivel:
 - [Restore](docs/RESTORE.md)
 - [Operations](docs/OPERATIONS.md)
 - [Uptime Kuma](docs/UPTIME_KUMA.md)
-- [Marca7](docs/MARCA7.md)
+- [Gestor Agro](docs/GESTOR_AGRO.md)
 - [Application Deployment](docs/APPLICATION_DEPLOYMENT.md)
 - [CI/CD](docs/CI_CD.md)
 - [Discord Notifications](docs/DISCORD_NOTIFICATIONS.md)
