@@ -27,6 +27,7 @@ Ver também [MARCA7_TECH_DNS_ACCESS.md](MARCA7_TECH_DNS_ACCESS.md).
 | `compose/minio/` | Object storage (S3 + console) |
 | `compose/marca7-api/` | Nest API (Gestor Agro) |
 | `compose/marca7-app/` | Next APP (Gestor Agro) |
+| `compose/watchtower/` | Pull automático de imagens com label Watchtower |
 
 ## Bootstrap VPS
 
@@ -48,24 +49,67 @@ cp compose/marca7-api/.env.example compose/marca7-api/.env
 # MINIO_ACCESS_KEY / MINIO_SECRET_KEY = mesmos do MinIO root (ou user dedicado)
 # FRONTEND_URL=https://gestoragro.marca7.tech
 # MINIO_PUBLIC_URL=https://s3.marca7.tech
+# SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-api:latest
 chmod 600 compose/marca7-api/.env compose/minio/.env compose/postgres/.env
 
-# Imagens: via GitHub Actions (push main) ou pull manual GHCR
+# APP env
+cp compose/marca7-app/.env.example compose/marca7-app/.env
+# SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-app:latest
+
+# Imagens: GitHub Actions publica no GHCR; Watchtower puxa :latest na VPS
 ```
 
 Seed de cadastro (admin, catálogos, produtos, fazendas) roda no entrypoint da API (`prisma migrate deploy` + `db seed`). **Não** popula entrada/saída/inventário/nota/remessa.
 
-Admin seed: CPF `00000000000` / senha `admin123` — **trocar após o primeiro login**.
+Admin seed: variáveis `ADMIN_LOCAL_*` no `.env` da API (ver `.env.example`).
 
-## CI/CD
+## CI/CD (pull-based)
 
-Repos `Marca7-Tech/marca7-gestor-agro-api` e `marca7-gestor-agro-app`: workflow `build-and-deploy.yml` em push `main` (linux/amd64, GHCR, deploy SSH via `oracle-infra@v1`).
+Repos `Marca7-Tech/marca7-gestor-agro-api` e `marca7-gestor-agro-app`: workflow **Build and publish** em push `main` (linux/amd64 → GHCR com tags `latest` + `sha-*`).
 
-Secrets: ver [GITHUB_SECRETS.md](GITHUB_SECRETS.md).
+**Não há deploy SSH** a partir do GitHub Actions. A VPS atualiza sozinha:
+
+1. CI publica `ghcr.io/marca7-tech/marca7-gestor-agro-{app|api}:latest`
+2. Watchtower (poll ~60s) detecta digest novo nos containers com label `com.centurylinklabs.watchtower.enable=true`
+3. Recreate de `marca7-app` / `marca7-api`
+
+### One-time: ativar Watchtower na VPS
+
+Se a VPS ainda rodava `sha-*` via deploy SSH antigo, faça uma vez:
+
+```bash
+cd /opt/infra
+git pull --ff-only
+
+# Garantir tag mutável (não sha-*)
+grep SERVICE_IMAGE compose/marca7-app/.env
+grep SERVICE_IMAGE compose/marca7-api/.env
+# Esperado:
+# SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-app:latest
+# SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-api:latest
+
+# Recriar app/api com labels Watchtower + :latest
+docker compose -f compose/marca7-app/compose.yml up -d
+docker compose -f compose/marca7-api/compose.yml up -d
+
+# Subir Watchtower
+docker compose -f compose/watchtower/compose.yml up -d
+docker logs -f watchtower   # deve listar só containers com a label
+```
+
+### Rollback manual
+
+```bash
+# Ex.: voltar APP para um sha conhecido (ainda publicado no GHCR)
+SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-app:sha-<full>
+# editar compose/marca7-app/.env e:
+docker compose -f compose/marca7-app/compose.yml up -d
+# Depois restaure :latest no .env para o Watchtower voltar a atualizar
+```
 
 ### GHCR (pull na VPS)
 
-Pacotes em `ghcr.io/marca7-tech/*`. O deploy SSH faz `docker login` efêmero com `GITHUB_TOKEN` (`packages: read`) antes do pull e `docker logout` depois. Com repos públicos, packages costumam ficar puxáveis sem login manual.
+Pacotes em `ghcr.io/marca7-tech/*`. Com packages públicos, o pull não precisa de login. Se forem privados, configure auth no Docker da VPS (não no Actions).
 
 ## Monitoramento
 

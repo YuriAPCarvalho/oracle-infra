@@ -23,6 +23,7 @@ services:
       - proxy
 
     labels:
+      - com.centurylinklabs.watchtower.enable=true
       - traefik.enable=true
       - traefik.docker.network=proxy
       - traefik.http.middlewares.marca7-app-https.redirectscheme.scheme=https
