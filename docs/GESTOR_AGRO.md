@@ -75,15 +75,13 @@ Repos `Marca7-Tech/marca7-gestor-agro-api` e `marca7-gestor-agro-app`: workflow 
 
 ### GHCR (pull na VPS)
 
-Pacotes em `ghcr.io/marca7-tech/*` estão **privados**. A VPS precisa de login persistente:
+Pacotes `ghcr.io/marca7-tech/marca7-gestor-agro-{app|api}` estão **públicos** — pull e Watchtower funcionam sem `docker login`.
+
+Se no futuro voltarem a ser privados, faça login persistente na VPS:
 
 ```bash
-# Preferir PAT classic com read:packages (não use token pessoal de longo prazo)
-echo '<PAT>' | docker login ghcr.io -u <github-user> --password-stdin
-# Credenciais ficam em /root/.docker/config.json (montado no Watchtower)
+echo '<PAT read:packages>' | docker login ghcr.io -u <github-user> --password-stdin
 ```
-
-Sem esse login, `docker pull` / Watchtower falham com `unauthorized`.
 
 ### One-time: ativar Watchtower na VPS
 
@@ -93,8 +91,8 @@ Se a VPS ainda rodava `sha-*` / `:local` via deploy antigo, faça uma vez:
 cd /opt/infra
 git pull --ff-only
 
-# Login GHCR (se ainda não houver)
-echo '<PAT>' | docker login ghcr.io -u <github-user> --password-stdin
+# Login GHCR só se os packages forem privados
+# echo '<PAT>' | docker login ghcr.io -u <github-user> --password-stdin
 
 # Ou use o script (força SERVICE_IMAGE=:latest e sobe Watchtower)
 bash scripts/enable-marca7-watchtower.sh
