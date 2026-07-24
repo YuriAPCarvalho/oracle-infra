@@ -16,14 +16,15 @@ ensure_latest() {
     echo "ERROR: missing ${env_file}" >&2
     exit 1
   fi
-  if grep -qE '^SERVICE_IMAGE=.*:sha-' "${env_file}"; then
-    echo "Updating ${env_file} SERVICE_IMAGE -> ${default_image}"
+  if grep -qE "^SERVICE_IMAGE=${default_image}$" "${env_file}"; then
+    echo "OK ${env_file} already uses ${default_image}"
+    return 0
+  fi
+  echo "Updating ${env_file} SERVICE_IMAGE -> ${default_image}"
+  if grep -qE '^SERVICE_IMAGE=' "${env_file}"; then
     sed -i.bak -E "s|^SERVICE_IMAGE=.*|SERVICE_IMAGE=${default_image}|" "${env_file}"
-  elif ! grep -qE '^SERVICE_IMAGE=.+:latest$' "${env_file}"; then
-    echo "WARN: ${env_file} SERVICE_IMAGE is not :latest — set manually if needed:"
-    grep -E '^SERVICE_IMAGE=' "${env_file}" || true
   else
-    echo "OK ${env_file} already uses :latest"
+    echo "SERVICE_IMAGE=${default_image}" >> "${env_file}"
   fi
 }
 

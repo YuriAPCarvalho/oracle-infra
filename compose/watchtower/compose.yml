@@ -1,6 +1,7 @@
 services:
   watchtower:
-    image: containrrr/watchtower:1.7.1
+    # Maintained fork — containrrr/watchtower breaks on Docker Engine 29+ (API min 1.44)
+    image: nickfedor/watchtower:latest
     container_name: watchtower
     restart: unless-stopped
 
@@ -9,9 +10,12 @@ services:
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      # Host GHCR auth from `docker login ghcr.io` (private packages)
+      - /root/.docker/config.json:/config/config.json:ro
 
     environment:
       TZ: America/Sao_Paulo
+      DOCKER_CONFIG: /config
       # Only containers with com.centurylinklabs.watchtower.enable=true
       WATCHTOWER_LABEL_ENABLE: "true"
       WATCHTOWER_POLL_INTERVAL: "60"

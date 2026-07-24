@@ -73,27 +73,32 @@ Repos `Marca7-Tech/marca7-gestor-agro-api` e `marca7-gestor-agro-app`: workflow 
 2. Watchtower (poll ~60s) detecta digest novo nos containers com label `com.centurylinklabs.watchtower.enable=true`
 3. Recreate de `marca7-app` / `marca7-api`
 
+### GHCR (pull na VPS)
+
+Pacotes em `ghcr.io/marca7-tech/*` estão **privados**. A VPS precisa de login persistente:
+
+```bash
+# Preferir PAT classic com read:packages (não use token pessoal de longo prazo)
+echo '<PAT>' | docker login ghcr.io -u <github-user> --password-stdin
+# Credenciais ficam em /root/.docker/config.json (montado no Watchtower)
+```
+
+Sem esse login, `docker pull` / Watchtower falham com `unauthorized`.
+
 ### One-time: ativar Watchtower na VPS
 
-Se a VPS ainda rodava `sha-*` via deploy SSH antigo, faça uma vez:
+Se a VPS ainda rodava `sha-*` / `:local` via deploy antigo, faça uma vez:
 
 ```bash
 cd /opt/infra
 git pull --ff-only
 
-# Garantir tag mutável (não sha-*)
-grep SERVICE_IMAGE compose/marca7-app/.env
-grep SERVICE_IMAGE compose/marca7-api/.env
-# Esperado:
-# SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-app:latest
-# SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-api:latest
+# Login GHCR (se ainda não houver)
+echo '<PAT>' | docker login ghcr.io -u <github-user> --password-stdin
 
-# Recriar app/api com labels Watchtower + :latest
-docker compose -f compose/marca7-app/compose.yml up -d
-docker compose -f compose/marca7-api/compose.yml up -d
+# Ou use o script (força SERVICE_IMAGE=:latest e sobe Watchtower)
+bash scripts/enable-marca7-watchtower.sh
 
-# Subir Watchtower
-docker compose -f compose/watchtower/compose.yml up -d
 docker logs -f watchtower   # deve listar só containers com a label
 ```
 
@@ -101,15 +106,11 @@ docker logs -f watchtower   # deve listar só containers com a label
 
 ```bash
 # Ex.: voltar APP para um sha conhecido (ainda publicado no GHCR)
-SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-app:sha-<full>
-# editar compose/marca7-app/.env e:
+# editar compose/marca7-app/.env:
+# SERVICE_IMAGE=ghcr.io/marca7-tech/marca7-gestor-agro-app:sha-<full>
 docker compose -f compose/marca7-app/compose.yml up -d
 # Depois restaure :latest no .env para o Watchtower voltar a atualizar
 ```
-
-### GHCR (pull na VPS)
-
-Pacotes em `ghcr.io/marca7-tech/*`. Com packages públicos, o pull não precisa de login. Se forem privados, configure auth no Docker da VPS (não no Actions).
 
 ## Monitoramento
 
