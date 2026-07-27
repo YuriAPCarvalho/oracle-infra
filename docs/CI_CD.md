@@ -2,7 +2,7 @@
 
 Base **experimental** e reutilizável de CI/CD para futuros serviços na VPS Oracle ARM64.
 
-> Esta base **não** está declarada pronta para produção até ser validada com o primeiro deploy controlado de um serviço real (ex.: bot de ponto). Nenhum bot é migrado somente por existir esta base.
+> Esta base **não** está declarada pronta para produção até ser validada com o primeiro deploy controlado de um serviço real (ex.: dailybot). Nenhum bot é migrado somente por existir esta base.
 
 ## Principios
 

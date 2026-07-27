@@ -61,7 +61,6 @@ Secrets e chave SSH de deploy: `docs/GITHUB_SECRETS.md`.
 
 Na primeira fase de aplicacoes, somente estes servicos serao preparados para migracao futura:
 
-- bot de ponto — levantamento em [services/bot-ponto/DISCOVERY.md](../services/bot-ponto/DISCOVERY.md);
 - bot do Discord.
 
 Outros projetos nao serao migrados inicialmente.

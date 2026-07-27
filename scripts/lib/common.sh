@@ -16,7 +16,6 @@ SERVICES=(
   minio
   redis
   waha
-  bot-ponto
   dailybot
   gold-api
   gold-admin
@@ -106,7 +105,6 @@ service_compose_file() {
     portainer) printf '%s\n' "${PROJECT_ROOT}/compose/portainer/compose.yml" ;;
     dozzle) printf '%s\n' "${PROJECT_ROOT}/compose/dozzle/compose.yml" ;;
     uptime-kuma) printf '%s\n' "${PROJECT_ROOT}/compose/uptime-kuma/compose.yml" ;;
-    bot-ponto) printf '%s\n' "${PROJECT_ROOT}/compose/bot-ponto/compose.yml" ;;
     postgres) printf '%s\n' "${PROJECT_ROOT}/compose/postgres/compose.yml" ;;
     minio) printf '%s\n' "${PROJECT_ROOT}/compose/minio/compose.yml" ;;
     dailybot) printf '%s\n' "${PROJECT_ROOT}/compose/dailybot/compose.yml" ;;

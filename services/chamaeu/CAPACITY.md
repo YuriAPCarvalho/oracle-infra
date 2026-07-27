@@ -9,7 +9,6 @@ Host: `oracle-arm-free-218136` (`129.146.161.65`), ARM64, ~11 GiB RAM, ~97 GiB d
 | dailybot | 1.33 GiB |
 | uptime-kuma | 125 MiB |
 | gold-api | 124 MiB |
-| bot-ponto | 119 MiB |
 | gold-admin | 86 MiB |
 | postgres | 35 MiB |
 | traefik + ops | ~220 MiB |

@@ -104,7 +104,6 @@ Base **experimental** disponivel:
 
 ### Fase 5 - Servicos
 
-- bot de ponto ([Discovery](services/bot-ponto/DISCOVERY.md));
 - bot do Discord;
 - **ScriptGold** (`gold-api` + `gold-admin`) — migracao Railway → Oracle.
 
@@ -123,8 +122,6 @@ Base **experimental** disponivel:
 - [Rollback](docs/ROLLBACK.md)
 - [GitHub Secrets](docs/GITHUB_SECRETS.md)
 - [Service Onboarding Checklist](docs/SERVICE_ONBOARDING_CHECKLIST.md)
-- [Bot de ponto — Discovery](services/bot-ponto/DISCOVERY.md)
-- [Bot de ponto — README](services/bot-ponto/README.md)
 
 ## Seguranca
 

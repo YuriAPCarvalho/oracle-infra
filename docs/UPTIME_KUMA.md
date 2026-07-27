@@ -34,7 +34,7 @@ Monitores criados pelo seed (rede Docker `proxy` + URLs públicas ScriptGold + *
 | `gold-admin` | `https://adm.scriptgold.com.br/health` | ScriptGold Admin |
 | `chamaeu-*` | ver [chamaeu/MONITORING.md](chamaeu/MONITORING.md) | Seed: `uptime-kuma-seed-chamaeu-monitors.sh` (incluído no seed principal) |
 
-Monitores **Push** (bots) são criados na UI ou pelo app (`KUMA_PUSH_URL` em `dailybot` / `bot-ponto`).
+Monitores **Push** (bots) são criados na UI ou pelo app (`KUMA_PUSH_URL` em `dailybot`).
 
 Se os nomes na UI forem diferentes (ex.: `Traefik HTTP`, `ScriptGold API`), use `KUMA_MONITOR_NAMES` ao rodar o seed Discord (ver abaixo).
 
@@ -56,7 +56,7 @@ chmod 600 compose/uptime-kuma/.env
 
 ```bash
 # opcional, se os nomes na UI não forem traefik/portainer/dozzle/gold-api/gold-admin:
-export KUMA_MONITOR_NAMES="Traefik HTTP,Portainer,Dozzle,ScriptGold API,ScriptGold Admin,Bot Ponto,Daily Bot Discord"
+export KUMA_MONITOR_NAMES="Traefik HTTP,Portainer,Dozzle,ScriptGold API,ScriptGold Admin,Daily Bot Discord"
 
 bash scripts/uptime-kuma-seed-discord.sh
 ```

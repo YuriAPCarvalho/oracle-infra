@@ -37,16 +37,6 @@ jobs:
       - name: Validate compose files
         run: |
           set -Eeuo pipefail
-          bot_env="compose/bot-ponto/.env"
-          if [[ ! -f "${bot_env}" ]]; then
-            cp compose/bot-ponto/.env.example "${bot_env}"
-            {
-              echo 'SERVICE_IMAGE=bot-ponto:local'
-              echo 'CENTRAL_URL=https://example.invalid/0'
-              echo 'CENTRAL_NUMERO_FOLHA=0'
-              echo 'CENTRAL_PASSWORD=placeholder'
-            } >> "${bot_env}"
-          fi
           pg_env="compose/postgres/.env"
           if [[ ! -f "${pg_env}" ]]; then
             cp compose/postgres/.env.example "${pg_env}"
