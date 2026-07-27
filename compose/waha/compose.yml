@@ -31,6 +31,7 @@ services:
 
     networks:
       - internal
+      - proxy
 
     healthcheck:
       test:
@@ -47,3 +48,6 @@ networks:
   internal:
     external: true
     name: internal
+  proxy:
+    external: true
+    name: proxy
