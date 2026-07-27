@@ -24,7 +24,18 @@ export ALLOWED_EMAILS=yuri.apcarvalho@gmail.com   # vírgula para vários
 node scripts/configure-chamaeu-cloudflare-access.mjs
 ```
 
-Cria/atualiza registros **A** proxied e applications Access com IdP **Cloudflare** + **One-time PIN**.
+**Token:** em [API Tokens](https://dash.cloudflare.com/profile/api-tokens), use o template **Edit Cloudflare Zero Trust** (ou custom com *Account → Access: Apps and Policies → Edit* e *Zone → DNS → Edit* na zona `chamaeu.app`). O token só de DNS (ex.: cutover) falha em `GET .../access/identity_providers` com *Authentication error* — DNS pode ter sido aplicado mesmo assim; Access precisa de um segundo token ou do dashboard.
+
+**Manual (Zero Trust):** [Access → Applications](https://one.dash.cloudflare.com/) → Add application → Self-hosted, um app por domínio abaixo, policy **Allow** → *Include* → *Emails* → mesmos e-mails do Marca7. IdPs: Cloudflare + One-time PIN (como em [MARCA7_TECH_DNS_ACCESS.md](../MARCA7_TECH_DNS_ACCESS.md)).
+
+| Application | Domain |
+|-------------|--------|
+| Uptime Kuma (ChamaEu) | `uptimekuma.chamaeu.app` |
+| Dozzle (ChamaEu) | `dozzle.chamaeu.app` |
+| Portainer (ChamaEu) | `portainer.chamaeu.app` |
+| Traefik (ChamaEu) | `traefik.chamaeu.app` |
+
+Cria/atualiza registros **A** proxied e applications Access com IdP **Cloudflare** + **One-time PIN** (quando o token tiver permissão).
 
 SSL da zona: **Full (strict)** (se o token tiver Zone Settings Write).
 
