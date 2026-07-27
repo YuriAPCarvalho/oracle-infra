@@ -19,7 +19,20 @@ DB_FILE="${DATA_DIR}/kuma.db"
 COMPOSE_FILE="$(service_compose_file uptime-kuma)"
 ENV_FILE="${PROJECT_ROOT}/compose/uptime-kuma/.env"
 NOTIF_NAME="discord-infra"
-MONITOR_NAMES=(traefik portainer dozzle marca7-api marca7-app)
+# Override on VPS if monitors were created manually (comma-separated names):
+#   KUMA_MONITOR_NAMES="Traefik HTTP,Portainer,Dozzle,ScriptGold API,..."
+if [[ -n "${KUMA_MONITOR_NAMES:-}" ]]; then
+  IFS=',' read -r -a MONITOR_NAMES <<< "${KUMA_MONITOR_NAMES}"
+  i=0
+  for name in "${MONITOR_NAMES[@]}"; do
+    name="${name#"${name%%[![:space:]]*}"}"
+    name="${name%"${name##*[![:space:]]}"}"
+    MONITOR_NAMES[$i]="${name}"
+    i=$((i + 1))
+  done
+else
+  MONITOR_NAMES=(traefik portainer dozzle gold-api gold-admin)
+fi
 
 require_command docker
 

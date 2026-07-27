@@ -113,7 +113,7 @@ docker compose -f compose/marca7-app/compose.yml up -d
 ## Monitoramento
 
 ```bash
-bash scripts/uptime-kuma-seed-monitors.sh   # inclui marca7-api / marca7-app (containers Gestor Agro)
+bash scripts/uptime-kuma-seed-monitors.sh   # Oracle: traefik/portainer/dozzle + ScriptGold (sem marca7)
 ```
 
 Monitores HTTP públicos: `https://gestoragro-api.marca7.tech/health` e `https://gestoragro.marca7.tech/` (após DNS). Até lá, health local: `http://127.0.0.1:4000/health` e `http://127.0.0.1:3000/`.

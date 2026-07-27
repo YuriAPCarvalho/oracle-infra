@@ -7,7 +7,7 @@ Monitors (inserted on VPS):
 - ScriptGold API → `https://scriptgold.com.br/health`
 - ScriptGold Admin → `https://adm.scriptgold.com.br/health`
 
-UI via SSH tunnel: `ssh -L 3001:127.0.0.1:3001 ubuntu@129.146.161.65`
+UI via SSH tunnel: `ssh -L 8082:127.0.0.1:8082 ubuntu@129.146.161.65`
 
 ## Dozzle
 

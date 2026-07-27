@@ -16,8 +16,6 @@ SERVICES=(
   minio
   redis
   waha
-  marca7-api
-  marca7-app
   bot-ponto
   dailybot
   gold-api
@@ -111,8 +109,6 @@ service_compose_file() {
     bot-ponto) printf '%s\n' "${PROJECT_ROOT}/compose/bot-ponto/compose.yml" ;;
     postgres) printf '%s\n' "${PROJECT_ROOT}/compose/postgres/compose.yml" ;;
     minio) printf '%s\n' "${PROJECT_ROOT}/compose/minio/compose.yml" ;;
-    marca7-api) printf '%s\n' "${PROJECT_ROOT}/compose/marca7-api/compose.yml" ;;
-    marca7-app) printf '%s\n' "${PROJECT_ROOT}/compose/marca7-app/compose.yml" ;;
     dailybot) printf '%s\n' "${PROJECT_ROOT}/compose/dailybot/compose.yml" ;;
     gold-api) printf '%s\n' "${PROJECT_ROOT}/compose/gold-api/compose.yml" ;;
     gold-admin) printf '%s\n' "${PROJECT_ROOT}/compose/gold-admin/compose.yml" ;;
