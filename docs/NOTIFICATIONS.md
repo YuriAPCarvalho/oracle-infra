@@ -8,7 +8,7 @@ Escopo: **129.146.161.65** (Oracle Cloud ARM64). Gestor Agro / Marca7 **não** f
 |-------|------------------|--------|
 | `#infra-alertas` (ou equivalente) | `KUMA_DISCORD_WEBHOOK_URL` em `compose/uptime-kuma/.env` | Uptime Kuma: DOWN/UP de monitores |
 | `#deploys` / `#ci-infra` | GitHub secret `DISCORD_WEBHOOK_URL` | CI/CD: deploy, rollback, falha de healthcheck |
-| `#bots` (opcional) | `BOT_DISCORD_WEBHOOK` nos compose dos bots | Eventos funcionais (dailybot) — não substituem Push |
+| `#bots` (opcional) | webhooks nos compose dos bots | Eventos funcionais dos bots — não substituem Push |
 
 Nunca misturar o webhook de CI com o do Kuma. Ver [DISCORD_NOTIFICATIONS.md](DISCORD_NOTIFICATIONS.md) e [UPTIME_KUMA.md](UPTIME_KUMA.md).
 
@@ -20,7 +20,6 @@ Nunca misturar o webhook de CI com o do Kuma. Ver [DISCORD_NOTIFICATIONS.md](DIS
 | P0 | Portainer, Dozzle | HTTP |
 | P0 | ScriptGold API / Admin | HTTP público `/health` |
 | P0 | ChamaEu API / Web / Admin | HTTP público + keyword em `/health` — [chamaeu/MONITORING.md](chamaeu/MONITORING.md) |
-| P1 | Daily Bot | **Push** (`KUMA_PUSH_URL` no `.env` do serviço) |
 | P1 | Rankao / WAHA / outros | HTTP ou Push conforme expõem health |
 
 Regras:

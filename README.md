@@ -104,7 +104,6 @@ Base **experimental** disponivel:
 
 ### Fase 5 - Servicos
 
-- bot do Discord;
 - **ScriptGold** (`gold-api` + `gold-admin`) — migracao Railway → Oracle.
 
 ## Documentacao

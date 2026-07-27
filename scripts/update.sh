@@ -30,7 +30,7 @@ main() {
 
   section "Pulling images"
   while IFS= read -r compose_file; do
-    # Local-only images (e.g. dailybot:local) have no registry remotes.
+    # Local-only images (e.g. service:local) have no registry remotes.
     if ! docker compose -f "${compose_file}" pull; then
       warn "Pull skipped/failed for ${compose_file} (local image or registry unavailable)"
     fi

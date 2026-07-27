@@ -33,7 +33,7 @@ Callers devem pinar `YuriAPCarvalho/oracle-infra` com tag versionada (`@v1`), na
 - Banco nao deve ser criado sem requisito real.
 - Portas nao serao expostas sem necessidade.
 - Bots sem interface HTTP e **sem necessidade de egress** podem ficar apenas na rede `internal`.
-- Bots/workers que precisam de HTTPS de saída (portais externos, webhooks) devem usar uma **bridge própria com outbound**, sem portas publicadas e sem Traefik. Exemplo documentado: [DailyBot](../services/dailybot/DISCOVERY.md).
+- Bots/workers que precisam de HTTPS de saída (portais externos, webhooks) devem usar uma **bridge própria com outbound**, sem portas publicadas e sem Traefik.
 - Traefik sera usado apenas quando houver endpoint HTTP real.
 - Cada aplicacao devera ter rollback documentado.
 - Producao prefere tag imutavel `sha-<commit>` no GHCR.
@@ -45,8 +45,6 @@ Excecao documentada ao padrao `internal`:
 
 - Servicos **sem** egress: rede `internal`.
 - Servicos **com** egress necessario (portais HTTPS, webhooks): bridge propria do projeto, sem portas e sem Traefik.
-
-Referencia: [DailyBot — Discovery](../services/dailybot/DISCOVERY.md).
 
 ## Padrao de Compose
 

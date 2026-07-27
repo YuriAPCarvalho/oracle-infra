@@ -59,12 +59,6 @@ Templates de caller (nao ativos neste repo): `templates/github-actions/`.
 
 Secrets e chave SSH de deploy: `docs/GITHUB_SECRETS.md`.
 
-Na primeira fase de aplicacoes, somente estes servicos serao preparados para migracao futura:
-
-- bot do Discord.
-
-Outros projetos nao serao migrados inicialmente.
-
 Use `templates/docker-service/` como base estrutural. Nao crie Compose definitivo sem requisitos reais do projeto, imagem validada em ARM64, segredos mapeados e rollback documentado.
 
 ## Infra CI (este repositorio)

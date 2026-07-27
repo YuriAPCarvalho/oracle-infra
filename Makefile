@@ -39,19 +39,6 @@ validate-compose:
 		cp compose/postgres/.env.example "$$pg_env"; \
 		printf '%s\n' 'POSTGRES_PASSWORD=placeholder-validate-only' >> "$$pg_env"; \
 	fi; \
-	daily_env="compose/dailybot/.env"; \
-	if [[ ! -f "$$daily_env" ]]; then \
-		cp compose/dailybot/.env.example "$$daily_env"; \
-		printf '%s\n' \
-			'SERVICE_IMAGE=dailybot:local' \
-			'DISCORD_TOKEN=placeholder' \
-			'CLIENT_ID=0' \
-			'GUILD_ID=0' \
-			'CHANNEL_DAILY=0' \
-			'CHANNEL_PO=0' \
-			'CHANNEL_ANIVERSARIOS=0' \
-			'DATABASE_URL=postgresql://dailybot:placeholder@postgres:5432/dailybot' >> "$$daily_env"; \
-	fi; \
 	minio_env="compose/minio/.env"; \
 	if [[ ! -f "$$minio_env" ]]; then \
 		cp compose/minio/.env.example "$$minio_env"; \

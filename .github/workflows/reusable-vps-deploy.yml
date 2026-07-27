@@ -1,5 +1,5 @@
 # Reusable controlled deploy to the Oracle VPS over SSH.
-# Experimental until validated with a real service (e.g. dailybot).
+# Experimental until validated with a real service.
 # Callers must pass secrets explicitly; Environment approval lives on the service repo.
 name: Reusable VPS Deploy
 

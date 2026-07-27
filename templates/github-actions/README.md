@@ -2,7 +2,7 @@
 
 Templates de pipeline para **repositórios de aplicação futuros**. Não são workflows ativos deste repositório.
 
-**Status:** experimental até o primeiro deploy controlado de um serviço real (ex.: dailybot).
+**Status:** experimental até o primeiro deploy controlado de um serviço real.
 
 ## Arquivos
 

@@ -5,7 +5,7 @@
 # Idempotent for role/database names (skips if already present).
 #
 # Usage:
-#   bash scripts/postgres-create-db.sh --name dailybot --password 'secret'
+#   bash scripts/postgres-create-db.sh --name appdb --password 'secret'
 #   bash scripts/postgres-create-db.sh --name myapp --password 'secret' --container postgres
 #
 set -Eeuo pipefail

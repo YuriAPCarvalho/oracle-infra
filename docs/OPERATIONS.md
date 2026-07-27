@@ -114,7 +114,7 @@ Novos servicos so entram no inventario operacional depois de existir Compose rea
 - Makefile e GitHub Actions: devem ganhar apenas targets e validacoes que reflitam servicos reais.
 - Uptime Kuma: deve monitorar container, heartbeat ou endpoint HTTP conforme o tipo do bot.
 
-Bots sem HTTP e sem egress ficam apenas na rede `internal`. Workers que precisam de outbound (ex.: [DailyBot](../services/dailybot/DISCOVERY.md)) usam bridge propria com egress, sem Traefik e sem portas publicadas. Traefik somente com endpoint HTTP real.
+Bots sem HTTP e sem egress ficam apenas na rede `internal`. Workers que precisam de outbound usam bridge propria com egress, sem Traefik e sem portas publicadas. Traefik somente com endpoint HTTP real.
 
 ## Postgres compartilhado
 
@@ -123,7 +123,7 @@ Uma instancia em `compose/postgres/` (rede `internal`, dados em `/opt/docker/pos
 Criar database/role por aplicacao:
 
 ```bash
-bash scripts/postgres-create-db.sh --name dailybot --password '...'
+bash scripts/postgres-create-db.sh --name appdb --password '...'
 ```
 
 Detalhes: [services/postgres/README.md](../services/postgres/README.md).

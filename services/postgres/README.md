@@ -22,13 +22,13 @@ Copiar `compose/postgres/.env.example` → `/opt/infra/compose/postgres/.env` na
 
 ```bash
 cd /opt/infra
-bash scripts/postgres-create-db.sh --name dailybot --password '...'
+bash scripts/postgres-create-db.sh --name appdb --password '...'
 ```
 
 URL interna tipica:
 
 ```text
-postgresql://dailybot:SENHA@postgres:5432/dailybot
+postgresql://appdb:SENHA@postgres:5432/appdb
 ```
 
 O serviço consumidor deve estar na rede `internal` (além da bridge de egress, se precisar).
@@ -47,5 +47,5 @@ docker compose -f compose/postgres/compose.yml ps
 Coberto pelo backup de `/opt/docker` (`make backup`). Dump lógico pontual:
 
 ```bash
-docker exec postgres pg_dump -U postgres -Fc dailybot > dailybot.dump
+docker exec postgres pg_dump -U postgres -Fc appdb > appdb.dump
 ```

@@ -5,7 +5,7 @@
 # Does not prune, remove volumes, reset git hard, or alter /opt/docker data permissions.
 #
 # Prefer --config FILE (KEY=VALUE) from the GHA runner to avoid remote shell injection.
-# Experimental until validated with a real application deploy (e.g. dailybot).
+# Experimental until validated with a real application deploy.
 
 set -Eeuo pipefail
 

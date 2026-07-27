@@ -6,7 +6,6 @@ Host: `oracle-arm-free-218136` (`129.146.161.65`), ARM64, ~11 GiB RAM, ~97 GiB d
 
 | Container | RAM aprox. |
 |-----------|------------|
-| dailybot | 1.33 GiB |
 | uptime-kuma | 125 MiB |
 | gold-api | 124 MiB |
 | gold-admin | 86 MiB |
