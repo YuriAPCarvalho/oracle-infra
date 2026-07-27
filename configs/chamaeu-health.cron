@@ -1,0 +1,2 @@
+# Optional host cron — install manually: sudo cp configs/chamaeu-health.cron /etc/cron.d/chamaeu-health
+*/15 * * * * ubuntu cd /opt/infra && /usr/bin/make health >> /opt/infra/logs/chamaeu-health.log 2>&1

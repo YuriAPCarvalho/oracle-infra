@@ -181,6 +181,8 @@ check_persistent_dirs() {
     /opt/docker/minio/data
     /opt/docker/dailybot/storage
     /opt/docker/gold-api/auth_info
+    /opt/docker/redis/data
+    /opt/docker/waha/sessions
   )
 
   for dir in "${dirs[@]}"; do

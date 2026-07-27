@@ -14,12 +14,17 @@ SERVICES=(
   uptime-kuma
   postgres
   minio
+  redis
+  waha
   marca7-api
   marca7-app
   bot-ponto
   dailybot
   gold-api
   gold-admin
+  rankao-api
+  rankao-web
+  rankao-adm
 )
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
@@ -111,6 +116,11 @@ service_compose_file() {
     dailybot) printf '%s\n' "${PROJECT_ROOT}/compose/dailybot/compose.yml" ;;
     gold-api) printf '%s\n' "${PROJECT_ROOT}/compose/gold-api/compose.yml" ;;
     gold-admin) printf '%s\n' "${PROJECT_ROOT}/compose/gold-admin/compose.yml" ;;
+    redis) printf '%s\n' "${PROJECT_ROOT}/compose/redis/compose.yml" ;;
+    waha) printf '%s\n' "${PROJECT_ROOT}/compose/waha/compose.yml" ;;
+    rankao-api) printf '%s\n' "${PROJECT_ROOT}/compose/rankao-api/compose.yml" ;;
+    rankao-web) printf '%s\n' "${PROJECT_ROOT}/compose/rankao-web/compose.yml" ;;
+    rankao-adm) printf '%s\n' "${PROJECT_ROOT}/compose/rankao-adm/compose.yml" ;;
     *) return 1 ;;
   esac
 }

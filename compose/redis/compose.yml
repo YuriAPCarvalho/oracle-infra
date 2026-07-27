@@ -1,0 +1,28 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    command: redis-server --appendonly yes
+
+    volumes:
+      - /opt/docker/redis/data:/data
+
+    networks:
+      - internal
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+networks:
+  internal:
+    external: true
+    name: internal
