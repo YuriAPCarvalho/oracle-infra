@@ -36,7 +36,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget -qO- --header=\"X-Api-Key: $$WAHA_API_KEY\" http://127.0.0.1:3000/api/server/status >/dev/null 2>&1 || exit 1",
+          "curl -fsS -H \"X-Api-Key: $$WAHA_API_KEY\" http://127.0.0.1:3000/api/server/status >/dev/null || exit 1",
         ]
       interval: 30s
       timeout: 10s
