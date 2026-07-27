@@ -16,7 +16,7 @@ export SERVICE_IMAGE=rankao-web:local
 docker compose up -d --force-recreate
 
 for i in $(seq 1 40); do
-  if docker exec rankao-web wget -qO- http://127.0.0.1:3000 >/dev/null 2>&1; then
+  if docker exec rankao-web node -e "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" 2>/dev/null; then
     echo "rankao-web healthy"
     exit 0
   fi
