@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Seed HTTP monitors for Traefik, Portainer and Dozzle in Uptime Kuma.
+# Seed HTTP monitors for Traefik, Portainer, Dozzle, ScriptGold and ChamaEu in Uptime Kuma.
 # Safe to re-run: skips monitors that already exist by name.
 #
 # Usage (on the VPS):
@@ -88,6 +88,10 @@ insert_http_monitor "dozzle" "http://dozzle:8080" 0
 # ScriptGold (Oracle VPS) — public HTTPS endpoints
 insert_http_monitor "gold-api" "https://scriptgold.com.br/health" 0
 insert_http_monitor "gold-admin" "https://adm.scriptgold.com.br/health" 0
+
+# shellcheck source=uptime-kuma-seed-chamaeu-monitors.sh
+source "${SCRIPT_DIR}/uptime-kuma-seed-chamaeu-monitors.sh"
+seed_chamaeu_monitors
 
 info "Starting uptime-kuma"
 docker compose -f "${COMPOSE_FILE}" start

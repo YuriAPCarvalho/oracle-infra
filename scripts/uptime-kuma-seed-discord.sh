@@ -31,7 +31,12 @@ if [[ -n "${KUMA_MONITOR_NAMES:-}" ]]; then
     i=$((i + 1))
   done
 else
-  MONITOR_NAMES=(traefik portainer dozzle gold-api gold-admin)
+  MONITOR_NAMES=(
+    traefik portainer dozzle gold-api gold-admin
+    chamaeu-api-health chamaeu-web chamaeu-adm
+    chamaeu-api-internal chamaeu-waha-server chamaeu-waha-session
+    chamaeu-api-tls chamaeu-web-tls chamaeu-adm-tls
+  )
 fi
 
 require_command docker

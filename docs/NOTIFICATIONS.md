@@ -19,6 +19,7 @@ Nunca misturar o webhook de CI com o do Kuma. Ver [DISCORD_NOTIFICATIONS.md](DIS
 | P0 | Traefik / edge | HTTP (rede `proxy`) |
 | P0 | Portainer, Dozzle | HTTP |
 | P0 | ScriptGold API / Admin | HTTP público `/health` |
+| P0 | ChamaEu API / Web / Admin | HTTP público + keyword em `/health` — [chamaeu/MONITORING.md](chamaeu/MONITORING.md) |
 | P1 | Bot Ponto, Daily Bot | **Push** (`KUMA_PUSH_URL` no `.env` do serviço) |
 | P1 | Rankao / WAHA / outros | HTTP ou Push conforme expõem health |
 

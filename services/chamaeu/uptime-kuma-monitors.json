@@ -1,5 +1,6 @@
 {
   "version": "1",
+  "description": "ChamaEu monitors for Uptime Kuma UI import or reference. Prefer VPS seed: bash scripts/uptime-kuma-seed-chamaeu-monitors.sh",
   "monitors": [
     {
       "name": "chamaeu-api-health",
@@ -7,22 +8,132 @@
       "url": "https://api.chamaeu.app/health",
       "interval": 60,
       "maxretries": 3,
+      "timeout": 15,
+      "keyword": "\"status\":\"ok\"",
+      "expiry_notification": false,
       "accepted_statuscodes": ["200-299"]
     },
     {
       "name": "chamaeu-web",
       "type": "http",
-      "url": "https://chamaeu.app",
+      "url": "https://chamaeu.app/",
       "interval": 120,
       "maxretries": 3,
+      "timeout": 15,
+      "expiry_notification": false,
       "accepted_statuscodes": ["200-299"]
     },
     {
       "name": "chamaeu-adm",
       "type": "http",
-      "url": "https://adm.chamaeu.app",
+      "url": "https://adm.chamaeu.app/",
       "interval": 120,
       "maxretries": 3,
+      "timeout": 15,
+      "expiry_notification": false,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-api-tls",
+      "type": "http",
+      "url": "https://api.chamaeu.app",
+      "interval": 86400,
+      "maxretries": 1,
+      "timeout": 30,
+      "expiry_notification": true,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-web-tls",
+      "type": "http",
+      "url": "https://chamaeu.app",
+      "interval": 86400,
+      "maxretries": 1,
+      "timeout": 30,
+      "expiry_notification": true,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-adm-tls",
+      "type": "http",
+      "url": "https://adm.chamaeu.app",
+      "interval": 86400,
+      "maxretries": 1,
+      "timeout": 30,
+      "expiry_notification": true,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-api-internal",
+      "type": "http",
+      "url": "http://rankao-api:3000/health",
+      "interval": 60,
+      "maxretries": 3,
+      "timeout": 10,
+      "keyword": "\"status\":\"ok\"",
+      "expiry_notification": false,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-web-internal",
+      "type": "http",
+      "url": "http://rankao-web:3000/",
+      "interval": 120,
+      "maxretries": 3,
+      "timeout": 15,
+      "expiry_notification": false,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-adm-internal",
+      "type": "http",
+      "url": "http://rankao-adm:3000/",
+      "interval": 120,
+      "maxretries": 3,
+      "timeout": 15,
+      "expiry_notification": false,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-waha-server",
+      "type": "http",
+      "url": "http://waha:3000/api/server/status",
+      "interval": 120,
+      "maxretries": 2,
+      "timeout": 10,
+      "headers": { "X-Api-Key": "<WAHA_API_KEY from compose/waha/.env>" },
+      "expiry_notification": false,
+      "accepted_statuscodes": ["200-299"],
+      "notes": "Seed via script reads .env; do not commit API key in JSON backups"
+    },
+    {
+      "name": "chamaeu-waha-session",
+      "type": "http",
+      "url": "http://waha:3000/api/sessions",
+      "interval": 120,
+      "maxretries": 2,
+      "timeout": 10,
+      "keyword": "WORKING",
+      "headers": { "X-Api-Key": "<WAHA_API_KEY>" },
+      "expiry_notification": false,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-privacy",
+      "type": "http",
+      "url": "https://chamaeu.app/privacy",
+      "interval": 300,
+      "maxretries": 3,
+      "priority": "P2-optional",
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "chamaeu-terms",
+      "type": "http",
+      "url": "https://chamaeu.app/terms",
+      "interval": 300,
+      "maxretries": 3,
+      "priority": "P2-optional",
       "accepted_statuscodes": ["200-299"]
     }
   ]

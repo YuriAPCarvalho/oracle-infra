@@ -8,6 +8,8 @@ Production hosts:
 
 Internal: `redis`, `waha`, Postgres database `rankao`.
 
+Uptime Kuma: `bash scripts/uptime-kuma-seed-chamaeu-monitors.sh` (ou seed completo `uptime-kuma-seed-monitors.sh`). Ver [MONITORING.md](../../docs/chamaeu/MONITORING.md).
+
 ## Docs
 
 - [STORAGE.md](STORAGE.md)

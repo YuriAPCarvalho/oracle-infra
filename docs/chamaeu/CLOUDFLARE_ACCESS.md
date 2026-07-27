@@ -75,9 +75,12 @@ Uptime Kuma mantém bind `127.0.0.1:8082` como fallback SSH; tráfego público e
 ## 3. Uptime Kuma — monitores ChamaEu
 
 ```bash
-bash scripts/uptime-kuma-seed-monitors.sh   # infra
-# monitores chamaeu: ver services/chamaeu/uptime-kuma-monitors.json (UI ou import)
+bash scripts/uptime-kuma-seed-monitors.sh   # infra + ScriptGold + ChamaEu
+# ou só ChamaEu:
+bash scripts/uptime-kuma-seed-chamaeu-monitors.sh
 ```
+
+Catálogo completo: [docs/chamaeu/MONITORING.md](../docs/chamaeu/MONITORING.md). Import de referência: [`services/chamaeu/uptime-kuma-monitors.json`](../../services/chamaeu/uptime-kuma-monitors.json).
 
 Discord: `compose/uptime-kuma/.env` + `bash scripts/uptime-kuma-seed-discord.sh`.
 

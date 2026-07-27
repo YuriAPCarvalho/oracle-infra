@@ -23,7 +23,7 @@ cd /opt/infra
 bash scripts/uptime-kuma-seed-monitors.sh
 ```
 
-Monitores criados pelo seed (rede Docker `proxy` + URLs públicas ScriptGold):
+Monitores criados pelo seed (rede Docker `proxy` + URLs públicas ScriptGold + **ChamaEu**):
 
 | Nome | URL | Notas |
 |------|-----|--------|
@@ -32,6 +32,7 @@ Monitores criados pelo seed (rede Docker `proxy` + URLs públicas ScriptGold):
 | `dozzle` | `http://dozzle:8080` | UI de logs |
 | `gold-api` | `https://scriptgold.com.br/health` | ScriptGold API |
 | `gold-admin` | `https://adm.scriptgold.com.br/health` | ScriptGold Admin |
+| `chamaeu-*` | ver [chamaeu/MONITORING.md](chamaeu/MONITORING.md) | Seed: `uptime-kuma-seed-chamaeu-monitors.sh` (incluído no seed principal) |
 
 Monitores **Push** (bots) são criados na UI ou pelo app (`KUMA_PUSH_URL` em `dailybot` / `bot-ponto`).
 
