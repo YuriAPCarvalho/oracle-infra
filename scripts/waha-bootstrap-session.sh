@@ -55,15 +55,18 @@ waha_json -X POST "$API/api/sessions/${SESSION}/start"
 
 echo
 echo "==> Wait for SCAN_QR_CODE or WORKING"
-for _ in $(seq 1 45); do
+status=""
+for _ in $(seq 1 60); do
   st="$(waha_curl "$API/api/sessions/${SESSION}" 2>/dev/null || echo '{}')"
-  echo "$st"
-  if echo "$st" | grep -q '"status":"SCAN_QR_CODE"'; then
+  status="$(echo "$st" | sed -n 's/.*"status":"\([^"]*\)".*/\1/p' | head -1)"
+  echo "status=${status:-unknown}"
+  if [[ "$status" == "SCAN_QR_CODE" || "$status" == "WORKING" ]]; then
     break
   fi
-  if echo "$st" | grep -q '"status":"WORKING"'; then
-    echo "Already paired."
-    exit 0
+  if [[ "$status" == "FAILED" ]]; then
+    echo "$st"
+    echo "Session FAILED — check: docker logs waha --tail 50" >&2
+    exit 1
   fi
   sleep 2
 done
@@ -97,6 +100,17 @@ if [[ -f "$API_ENV" ]]; then
   cd "${ROOT}/compose/rankao-api"
   docker compose up -d --force-recreate
   echo "rankao-api recreated with matching WAHA_*"
+  if [[ "${status:-}" == "WORKING" ]]; then
+    if grep -q '^DISPARAR_NOTIFICACAO_WHATSAPP=' "$API_ENV"; then
+      sed -i 's/^DISPARAR_NOTIFICACAO_WHATSAPP=.*/DISPARAR_NOTIFICACAO_WHATSAPP=true/' "$API_ENV"
+    else
+      echo "DISPARAR_NOTIFICACAO_WHATSAPP=true" >>"$API_ENV"
+    fi
+    docker compose up -d --force-recreate
+    echo "DISPARAR_NOTIFICACAO_WHATSAPP=true (session WORKING)"
+  else
+    echo "After QR scan: set DISPARAR_NOTIFICACAO_WHATSAPP=true in rankao-api .env and recreate API"
+  fi
 fi
 
 echo "DONE"
