@@ -1,6 +1,6 @@
 services:
   waha:
-    image: devlikeapro/waha:latest
+    image: devlikeapro/waha:gows
     platform: linux/amd64
     container_name: waha
     restart: unless-stopped
@@ -8,14 +8,23 @@ services:
     security_opt:
       - no-new-privileges:true
 
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
     env_file:
       - .env
 
     environment:
       TZ: America/Sao_Paulo
-      WHATSAPP_DEFAULT_ENGINE: WEBJS
+      WHATSAPP_DEFAULT_ENGINE: GOWS
+      GODEBUG: netdns=go
       WAHA_API_KEY: ${WAHA_API_KEY:?set WAHA_API_KEY}
       WAHA_PRINT_QR: "false"
+      # ChamaEu só envia texto — evita sync histórico pesado no primeiro pareamento
+      WAHA_GOWS_DEVICE_REQUIRE_FULL_SYNC: "false"
+      WAHA_GOWS_DEVICE_HISTORY_SYNC_RECENT_SYNC_DAYS_LIMIT: "30"
+      WAHA_GOWS_DEVICE_HISTORY_SYNC_INITIAL_SYNC_MAX_MESSAGES_PER_CHAT: "100"
 
     volumes:
       - /opt/docker/waha/sessions:/app/.sessions

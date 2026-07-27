@@ -24,7 +24,7 @@ Host: `oracle-arm-free-218136` (`129.146.161.65`), ARM64, ~11 GiB RAM, ~97 GiB d
 | rankao-web | 150–300 MiB |
 | rankao-adm | 150–300 MiB |
 | redis | 50–100 MiB |
-| waha | 200–800 MiB |
+| waha (GOWS) | ~80–250 MiB |
 | **Delta** | ~1–2 GiB |
 
 ## Conclusão
