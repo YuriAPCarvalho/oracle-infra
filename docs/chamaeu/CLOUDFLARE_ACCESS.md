@@ -29,7 +29,7 @@ node scripts/configure-chamaeu-cloudflare-access.mjs
 
 **Token:** em [API Tokens](https://dash.cloudflare.com/profile/api-tokens), use o template **Edit Cloudflare Zero Trust** (ou custom com *Account → Access: Apps and Policies → Edit* e *Zone → DNS → Edit* na zona `chamaeu.app`). O token só de DNS (ex.: cutover) falha em `GET .../access/identity_providers` com *Authentication error* — DNS pode ter sido aplicado mesmo assim; Access precisa de um segundo token ou do dashboard.
 
-**Manual (Zero Trust):** [Access → Applications](https://one.dash.cloudflare.com/) → Add application → Self-hosted, um app por domínio abaixo, policy **Allow** → *Include* → *Emails* → mesmos e-mails do Marca7. IdPs: Cloudflare + One-time PIN (como em [MARCA7_TECH_DNS_ACCESS.md](../MARCA7_TECH_DNS_ACCESS.md)).
+**Manual (Zero Trust):** [Access → Applications](https://one.dash.cloudflare.com/) → Add application → Self-hosted, um app por domínio abaixo, policy **Allow** → *Include* → *Emails* (ops) + *Require* → *Country* → **Brazil**. IdPs: Cloudflare + One-time PIN (como em [MARCA7_TECH_DNS_ACCESS.md](../MARCA7_TECH_DNS_ACCESS.md)).
 
 | Application | Domain |
 |-------------|--------|
@@ -97,3 +97,32 @@ Discord: `compose/uptime-kuma/.env` + `bash scripts/uptime-kuma-seed-discord.sh`
 1. Abrir `https://portainer.chamaeu.app` → tela **Cloudflare Access** → login e-mail.
 2. Depois do login, UI Portainer / Kuma / Dozzle / Grafana (`https://grafana.chamaeu.app`).
 3. `https://api.chamaeu.app/health` → **sem** Access, 200 JSON.
+
+## 4. WAF / proteção de requests (borda)
+
+Além do Access, a zona usa Custom WAF Rules (script [`configure-chamaeu-cloudflare-waf.mjs`](../../scripts/configure-chamaeu-cloudflare-waf.mjs)):
+
+| Alvo | País ≠ BR | Exceções |
+|------|-----------|----------|
+| Painéis (`grafana`, `portainer`, `dozzle`, `uptimekuma`, `traefik`) | **Block** | — |
+| Apps públicos (`chamaeu.app`, `api`, `adm`) | **Managed Challenge** | `/pagamento/webhook*`, `/health`, `/api/health` |
+
+Também: Security Level **High**, Browser Integrity Check **On**.
+
+```bash
+export CLOUDFLARE_API_TOKEN=...
+node scripts/configure-chamaeu-cloudflare-waf.mjs
+```
+
+**Nota:** webhooks de pagamento costumam vir de fora do BR — por isso não são bloqueados. Se Mercado Pago falhar, confirme o path do webhook na regra.
+
+## 5. Origin lock (UFW) — só Cloudflare em 80/443
+
+Na VPS, HTTP/HTTPS ficam restritos aos [CIDRs oficiais Cloudflare](https://www.cloudflare.com/ips/). SSH (22) permanece `LIMIT`.
+
+```bash
+cd /opt/infra
+sudo bash scripts/ufw-cloudflare-only-http.sh
+```
+
+Tráfego direto ao IP público da VPS nas portas 80/443 deve ser recusado; sites/painéis continuam via proxy Cloudflare.

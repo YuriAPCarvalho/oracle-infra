@@ -135,10 +135,11 @@ async function main() {
       `/accounts/${accountId}/access/apps/${app.id}/policies`,
     );
     const policyBody = {
-      name: "Allow ChamaEu ops",
+      name: "Allow ChamaEu ops (BR only)",
       decision: "allow",
       precedence: 1,
       include,
+      require: [{ geo: { country_code: "BR" } }],
     };
     if (!policies.length) {
       await api("POST", `/accounts/${accountId}/access/apps/${app.id}/policies`, policyBody);
