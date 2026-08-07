@@ -14,7 +14,6 @@ services:
       - --docker_only=true
       - --housekeeping_interval=15s
       - --store_container_labels=false
-      - --enable_metrics=cpu,memory,network,diskIO,disk,oom_event,processes
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
