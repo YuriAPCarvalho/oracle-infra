@@ -6,12 +6,11 @@ Escopo: **129.146.161.65** (Oracle Cloud ARM64). Gestor Agro / Marca7 **não** f
 
 | Canal | Webhook / secret | O quê |
 |-------|------------------|--------|
-| `#infra-alertas` (ou equivalente) | `KUMA_DISCORD_WEBHOOK_URL` em `compose/uptime-kuma/.env` | Uptime Kuma: DOWN/UP de monitores |
+| `#infra-alertas` (ou equivalente) | `KUMA_DISCORD_WEBHOOK_URL` (+ `GRAFANA_DISCORD_WEBHOOK_URL`, pode ser o mesmo) | Uptime Kuma DOWN/UP · Grafana CPU/RAM/disco/scrape |
 | `#deploys` / `#ci-infra` | GitHub secret `DISCORD_WEBHOOK_URL` | CI/CD: deploy, rollback, falha de healthcheck |
-| `#metrics-alertas` (recomendado) | `GRAFANA_DISCORD_WEBHOOK_URL` em `compose/grafana/.env` | Grafana: CPU/RAM/disco/load/scrape |
 | `#bots` (opcional) | webhooks nos compose dos bots | Eventos funcionais dos bots — não substituem Push |
 
-Nunca misturar webhooks de CI, Kuma e Grafana. Ver [DISCORD_NOTIFICATIONS.md](DISCORD_NOTIFICATIONS.md), [UPTIME_KUMA.md](UPTIME_KUMA.md) e [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md).
+Não reutilize o webhook de **CI** no Kuma/Grafana. Kuma e Grafana podem compartilhar `#infra-alertas`. Ver [DISCORD_NOTIFICATIONS.md](DISCORD_NOTIFICATIONS.md), [UPTIME_KUMA.md](UPTIME_KUMA.md) e [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md).
 
 ## Camada A — Disponibilidade (Uptime Kuma)
 

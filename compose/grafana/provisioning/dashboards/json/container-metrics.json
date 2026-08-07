@@ -49,6 +49,35 @@
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 8,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [
+        {
+          "expr": "count(changes(container_start_time_seconds{name=~\".+\",name!=\"\"}[1h]) > 0)",
+          "legendFormat": "restarted",
+          "refId": "A"
+        }
+      ],
+      "title": "Restarted (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
         "defaults": { "unit": "percentunit", "custom": { "fillOpacity": 15, "lineWidth": 2, "stacking": { "mode": "none" } } },
         "overrides": []
       },
@@ -84,11 +113,49 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Only series with an explicit memory limit (unlimited containers are omitted).",
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "fillOpacity": 15, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+      "id": 9,
+      "targets": [
+        {
+          "expr": "(sum by (name) (container_memory_working_set_bytes{name=~\".+\",name!=\"\"}) / clamp_min(sum by (name) (container_spec_memory_limit_bytes{name=~\".+\",name!=\"\"}), 1)) and on(name) ((sum by (name) (container_spec_memory_limit_bytes{name=~\".+\",name!=\"\"}) > 0) and (sum by (name) (container_spec_memory_limit_bytes{name=~\".+\",name!=\"\"}) < 1e15))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory vs limit",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "How many times start_time changed in the window (recreates/restarts).",
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "fillOpacity": 15, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "sum by (name) (changes(container_start_time_seconds{name=~\".+\",name!=\"\"}[1h]))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Container restarts (1h)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": { "unit": "Bps", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
       "id": 4,
       "targets": [
         {
@@ -108,37 +175,67 @@
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": { "unit": "bytes", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+        "defaults": { "unit": "Bps", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
       "id": 5,
       "targets": [
         {
-          "expr": "sum by (name) (container_fs_usage_bytes{name=~\".+\",name!=\"\"})",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (name) (rate(container_fs_reads_bytes_total{name=~\".+\",name!=\"\"}[5m]))",
+          "legendFormat": "read {{name}}",
           "refId": "A"
+        },
+        {
+          "expr": "sum by (name) (rate(container_fs_writes_bytes_total{name=~\".+\",name!=\"\"}[5m]))",
+          "legendFormat": "write {{name}}",
+          "refId": "B"
         }
       ],
-      "title": "Filesystem usage by container (if exposed)",
+      "title": "Disk I/O by container",
+      "description": "Per-container filesystem usage bytes are not exported on this Docker overlayfs/cgroup v2 host; I/O rates are.",
       "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": { "unit": "short", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 21 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 29 },
       "id": 6,
       "targets": [
         {
-          "expr": "sum by (name) (rate(container_cpu_cfs_throttled_seconds_total{name=~\".+\",name!=\"\"}[5m]))",
-          "legendFormat": "throttled {{name}}",
+          "expr": "sum by (name) (rate(container_pressure_cpu_stalled_seconds_total{name=~\".+\",name!=\"\"}[5m]))",
+          "legendFormat": "stalled {{name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (name) (rate(container_pressure_cpu_waiting_seconds_total{name=~\".+\",name!=\"\"}[5m]))",
+          "legendFormat": "waiting {{name}}",
+          "refId": "B"
+        }
+      ],
+      "title": "CPU pressure (PSI)",
+      "description": "CFS throttle seconds are absent without CPU quotas on cgroup v2. PSI stalled/waiting is the useful signal here.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 29 },
+      "id": 11,
+      "targets": [
+        {
+          "expr": "time() - container_start_time_seconds{name=~\".+\",name!=\"\"}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
-      "title": "CPU throttling",
+      "title": "Container age",
       "type": "timeseries"
     },
     {
@@ -147,7 +244,7 @@
         "defaults": { "unit": "bytes" },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 29 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 37 },
       "id": 7,
       "options": {
         "legend": { "displayMode": "list", "placement": "bottom" },
@@ -178,5 +275,5 @@
   "timezone": "browser",
   "title": "Container metrics",
   "uid": "oracle-container-metrics",
-  "version": 1
+  "version": 3
 }

@@ -21,9 +21,9 @@ services:
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ""
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
       GF_UNIFIED_ALERTING_ENABLED: "true"
-      # Discord webhook for alerting contact point. Default is a local noop so
-      # Grafana can start without a real secret; replace on the VPS via .env.
-      GRAFANA_DISCORD_WEBHOOK_URL: ${GRAFANA_DISCORD_WEBHOOK_URL:-http://127.0.0.1:1/grafana-discord-unconfigured}
+      # GRAFANA_DISCORD_WEBHOOK_URL comes only from env_file (.env).
+      # Do not interpolate it here — `docker compose -f` from /opt/infra would
+      # miss compose/grafana/.env and override with the noop default.
     ports:
       - "127.0.0.1:3000:3000"
     volumes:

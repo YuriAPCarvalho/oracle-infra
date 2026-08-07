@@ -26,6 +26,9 @@ Windows --SSH -L 3000-- > VPS:3000 (Grafana)
 Grafana --> Prometheus:9090
 Prometheus --> node-exporter:9100
 Prometheus --> cadvisor:8080
+Prometheus --> traefik:8082
+Prometheus --> postgres-exporter:9187
+Prometheus --> redis-exporter:9121
 ```
 
 ## Bootstrap
@@ -39,9 +42,11 @@ bash bootstrap/08-cadvisor.sh
 bash bootstrap/09-prometheus.sh
 # criar compose/grafana/.env a partir do .env.example
 bash bootstrap/10-grafana.sh
+bash bootstrap/11-postgres-exporter.sh   # gera DSN a partir do Postgres .env
+bash bootstrap/12-redis-exporter.sh
 ```
 
-Ou `bash bootstrap/bootstrap.sh` (painéis 03–06 + métricas 07–10).
+Ou `bash bootstrap/bootstrap.sh` (painéis 03–06 + métricas 07–12).
 
 ## Imagens (ARM64)
 
@@ -51,6 +56,8 @@ Ou `bash bootstrap/bootstrap.sh` (painéis 03–06 + métricas 07–10).
 | cAdvisor | `ghcr.io/google/cadvisor:0.56.2` |
 | Prometheus | `prom/prometheus:v3.2.1` |
 | Grafana | `grafana/grafana:11.6.0` |
+| Postgres exporter | `quay.io/prometheuscommunity/postgres-exporter:v0.17.1` |
+| Redis exporter | `oliver006/redis_exporter:v1.67.0` |
 
 ## Persistência
 
@@ -71,7 +78,18 @@ Mount-points de Docker/containerd excluídos do collector filesystem.
 
 Limites não aplicados de forma rígida no Compose até medição pós-deploy. Orçamento alvo: Node Exporter ≤128 MB, cAdvisor ≤512 MB, Prometheus ≤1.5 GB, Grafana ≤768 MB. Margem para bot Playwright ~1.5 GB em 12 GB.
 
-## Documentação detalhada
+## Dashboards Grafana
+
+Pasta **Oracle Infra**:
+
+| Dashboard | Conteúdo |
+|-----------|----------|
+| Host metrics | CPU, load, memória, disco, rede, PSI, FD/sockets, disk util/await |
+| Container metrics | CPU/RAM/rede/disco por container, restarts, PSI, idade |
+| Data layer | Postgres (conexões, tamanho, locks, txs) + Redis (mem, hit ratio, keys) |
+| Edge (Traefik) | req/s, 4xx/5xx, latência p50/p95, bytes |
+
+Alertas Discord: disco/memória/iowait/conntrack/scrape — ver [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md).
 
 - [PROMETHEUS.md](PROMETHEUS.md)
 - [GRAFANA.md](GRAFANA.md)

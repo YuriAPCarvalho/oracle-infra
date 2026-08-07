@@ -135,17 +135,17 @@ async function main() {
       `/accounts/${accountId}/access/apps/${app.id}/policies`,
     );
     const policyBody = {
-      name: "Allow ChamaEu ops (BR only)",
+      name: "Allow ChamaEu ops",
       decision: "allow",
       precedence: 1,
       include,
-      require: [{ geo: { country_code: "BR" } }],
     };
     if (!policies.length) {
       await api("POST", `/accounts/${accountId}/access/apps/${app.id}/policies`, policyBody);
       console.log("Access policy create", domain);
     } else {
-      const policy = policies[0];
+      // Prefer updating the allow policy; leave any other policies untouched.
+      const policy = policies.find((p) => p.decision === "allow") || policies[0];
       await api(
         "PUT",
         `/accounts/${accountId}/access/apps/${app.id}/policies/${policy.id}`,

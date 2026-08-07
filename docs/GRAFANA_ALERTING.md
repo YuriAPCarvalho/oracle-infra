@@ -6,7 +6,7 @@
 |-------|-------------|---------|
 | Serviço/endpoint DOWN/UP | Uptime Kuma | `KUMA_DISCORD_WEBHOOK_URL` |
 | Deploy/CI | GitHub Actions | `DISCORD_WEBHOOK_URL` |
-| CPU/RAM/disco/load/scrape | Grafana Alerting | `GRAFANA_DISCORD_WEBHOOK_URL` |
+| CPU/RAM/disco/scrape | Grafana Alerting | `GRAFANA_DISCORD_WEBHOOK_URL` (pode ser o mesmo do Kuma) |
 | Bots (funcional) | por bot | próprio |
 
 Nunca reutilizar o webhook de CI no Grafana.
@@ -39,10 +39,16 @@ Regras **conservadoras** apenas (memória perto do limit; restarts frequentes). 
 
 ## Teste controlado (sem spam)
 
-1. Definir `GRAFANA_DISCORD_WEBHOOK_URL` em `compose/grafana/.env`
-2. `make restart SERVICE=grafana`
-3. UI → Alerting → Contact points → **Test** em `discord-metrics`
-4. Não enviar webhook real no CI (`infra.yml` não notifica Grafana)
+Na VPS:
+
+```bash
+cd /opt/infra
+bash scripts/grafana-seed-discord.sh --test
+```
+
+Isso grava o webhook em `compose/grafana/.env` (reusa o do Kuma se faltar), recria o Grafana e manda um teste no Discord.
+
+Também: UI → Alerting → Contact points → **Test** em `discord-metrics`.
 
 ## Adicionar alerta por serviço
 

@@ -29,7 +29,7 @@ node scripts/configure-chamaeu-cloudflare-access.mjs
 
 **Token:** em [API Tokens](https://dash.cloudflare.com/profile/api-tokens), use o template **Edit Cloudflare Zero Trust** (ou custom com *Account → Access: Apps and Policies → Edit* e *Zone → DNS → Edit* na zona `chamaeu.app`). O token só de DNS (ex.: cutover) falha em `GET .../access/identity_providers` com *Authentication error* — DNS pode ter sido aplicado mesmo assim; Access precisa de um segundo token ou do dashboard.
 
-**Manual (Zero Trust):** [Access → Applications](https://one.dash.cloudflare.com/) → Add application → Self-hosted, um app por domínio abaixo, policy **Allow** → *Include* → *Emails* (ops) + *Require* → *Country* → **Brazil**. IdPs: Cloudflare + One-time PIN (como em [MARCA7_TECH_DNS_ACCESS.md](../MARCA7_TECH_DNS_ACCESS.md)).
+**Manual (Zero Trust):** [Access → Applications](https://one.dash.cloudflare.com/) → Add application → Self-hosted, um app por domínio abaixo, policy **Allow** → *Include* → *Emails* (ops). IdPs: Cloudflare + One-time PIN (como em [MARCA7_TECH_DNS_ACCESS.md](../MARCA7_TECH_DNS_ACCESS.md)).
 
 | Application | Domain |
 |-------------|--------|
@@ -98,33 +98,20 @@ Discord: `compose/uptime-kuma/.env` + `bash scripts/uptime-kuma-seed-discord.sh`
 2. Depois do login, UI Portainer / Kuma / Dozzle / Grafana (`https://grafana.chamaeu.app`).
 3. `https://api.chamaeu.app/health` → **sem** Access, 200 JSON.
 
-## 4. WAF / proteção de requests (borda)
+## 4. WAF / geo BR (opcional — **não aplicado**)
 
-Além do Access, a zona usa Custom WAF Rules (script [`configure-chamaeu-cloudflare-waf.mjs`](../../scripts/configure-chamaeu-cloudflare-waf.mjs)):
+ScriptGold e providers externos precisam de tráfego de fora do BR. Por isso **não** mantemos WAF geo nem `require` país nas policies Access.
 
-| Alvo | País ≠ BR | Exceções |
-|------|-----------|----------|
-| Painéis (`grafana`, `portainer`, `dozzle`, `uptimekuma`, `traefik`) | **Block** | — |
-| Apps públicos (`chamaeu.app`, `api`, `adm`) | **Managed Challenge** | `/pagamento/webhook*`, `/health`, `/api/health` |
+O script [`configure-chamaeu-cloudflare-waf.mjs`](../../scripts/configure-chamaeu-cloudflare-waf.mjs) existe se no futuro quiser challenge/block fora do BR nos painéis — **não rode** enquanto ScriptGold depender de IPs internacionais.
 
-Também: Security Level **High**, Browser Integrity Check **On**.
+Estado atual da zona: Access por e-mail apenas; `security_level=medium`; SSL **Full (strict)**.
 
-```bash
-export CLOUDFLARE_API_TOKEN=...
-node scripts/configure-chamaeu-cloudflare-waf.mjs
-```
+## 5. Origin lock Cloudflare-only (opcional — **não aplicado**)
 
-**Nota:** webhooks de pagamento costumam vir de fora do BR — por isso não são bloqueados. Se Mercado Pago falhar, confirme o path do webhook na regra.
+HTTP/HTTPS na VPS estão **Anywhere** (80/443) + SSH `LIMIT`, para não quebrar fluxos que batem no origin ou renovação ACME.
 
-## 5. Origin lock — só Cloudflare em 80/443
+O script [`ufw-cloudflare-only-http.sh`](../../scripts/ufw-cloudflare-only-http.sh) (UFW + `DOCKER-USER`) fica disponível, mas **não** está ativo.
 
-Na VPS, HTTP/HTTPS ficam restritos aos [CIDRs oficiais Cloudflare](https://www.cloudflare.com/ips/). SSH (22) permanece `LIMIT`.
+### ACME + Access (Grafana e painéis novos)
 
-> Docker publica 80/443 do Traefik e **bypassa o UFW**. O script também aplica a chain `DOCKER-USER` (iptables) e um unit systemd para reaplicar após reboot.
-
-```bash
-cd /opt/infra
-sudo bash scripts/ufw-cloudflare-only-http.sh
-```
-
-Tráfego direto ao IP público da VPS nas portas 80/443 deve falhar; sites/painéis continuam via proxy Cloudflare.
+Com DNS **proxied** + Access, o HTTP-01 do Let's Encrypt pode falhar (challenge redireciona para login). Para o **primeiro** certificado: DNS A em **DNS only** → recreate Grafana/Traefik → voltar **Proxied**. Renovações futuras dos hosts que já têm cert no `acme.json` costumam seguir sem isso.

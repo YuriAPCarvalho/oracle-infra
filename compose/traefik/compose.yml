@@ -20,6 +20,7 @@ services:
 
     networks:
       - proxy
+      - monitoring
 
     labels:
       - traefik.enable=true
@@ -39,3 +40,6 @@ networks:
   proxy:
     external: true
     name: proxy
+  monitoring:
+    external: true
+    name: monitoring

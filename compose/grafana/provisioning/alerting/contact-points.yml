@@ -8,11 +8,21 @@ contactPoints:
         type: discord
         disableResolveMessage: false
         settings:
-          # Interpolated from GRAFANA_DISCORD_WEBHOOK_URL in the container env.
-          # Leave unset until ready; do not put a real URL in Git.
+          # Interpolated from GRAFANA_DISCORD_WEBHOOK_URL in the container env
+          # (compose/grafana/.env via env_file). Prefer same channel as Uptime
+          # Kuma (#infra-alertas); never reuse the CI webhook.
           url: $GRAFANA_DISCORD_WEBHOOK_URL
+          title: |
+            {{ if eq .Status "firing" }}🚨{{ else }}✅{{ end }} {{ .CommonLabels.alertname }}
           message: |
-            {{ template "default.message" . }}
+            **Status:** {{ .Status }}
+            {{ range .Alerts -}}
+            • {{ .Annotations.summary }}
+            {{ if .Annotations.description }}  {{ .Annotations.description }}
+            {{ end -}}
+            {{ if .Labels.severity }}  severity={{ .Labels.severity }}{{ end }}
+            {{ end -}}
+            [Grafana]({{ .ExternalURL }})
 
 policies:
   - orgId: 1

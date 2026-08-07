@@ -9,6 +9,16 @@ entryPoints:
   websecure:
     address: ":443"
 
+  metrics:
+    address: ":8082"
+
+metrics:
+  prometheus:
+    entryPoint: metrics
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+
 certificatesResolvers:
   letsencrypt:
     acme:

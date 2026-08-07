@@ -25,6 +25,7 @@ Painel em `127.0.0.1:8082` (tunel SSH). Monitores da stack: ver [UPTIME_KUMA.md]
 ```bash
 bash scripts/uptime-kuma-seed-monitors.sh
 bash scripts/uptime-kuma-seed-discord.sh   # requer compose/uptime-kuma/.env com KUMA_DISCORD_WEBHOOK_URL
+bash scripts/grafana-seed-discord.sh --test  # Discord dos alertas Grafana (reusa webhook do Kuma se faltar)
 bash scripts/uptime-kuma-verify-notifications.sh
 ```
 

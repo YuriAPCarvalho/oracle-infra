@@ -1,0 +1,20 @@
+services:
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.17.1
+    container_name: postgres-exporter
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - monitoring
+      - internal
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  monitoring:
+    external: true
+    name: monitoring
+  internal:
+    external: true
+    name: internal

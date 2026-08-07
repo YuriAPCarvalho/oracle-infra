@@ -62,6 +62,63 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Breaks busy CPU into modes — iowait = disk wait; steal = hypervisor contention.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "custom": { "fillOpacity": 40, "lineWidth": 1, "stacking": { "mode": "normal" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "avg by (mode) (rate(node_cpu_seconds_total{mode=~\"user|system|iowait|steal|softirq|irq|nice\"}[5m]))",
+          "legendFormat": "{{mode}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU by mode",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "PSI: share of time some tasks waited on CPU / memory / IO.",
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 15, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 11,
+      "targets": [
+        {
+          "expr": "rate(node_pressure_cpu_waiting_seconds_total[5m])",
+          "legendFormat": "cpu waiting",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(node_pressure_memory_waiting_seconds_total[5m])",
+          "legendFormat": "memory waiting",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(node_pressure_io_waiting_seconds_total[5m])",
+          "legendFormat": "io waiting",
+          "refId": "C"
+        },
+        {
+          "expr": "rate(node_pressure_io_stalled_seconds_total[5m])",
+          "legendFormat": "io stalled",
+          "refId": "D"
+        }
+      ],
+      "title": "Host pressure (PSI)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "unit": "bytes",
@@ -69,7 +126,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
       "id": 3,
       "targets": [
         { "expr": "node_memory_MemTotal_bytes", "legendFormat": "total", "refId": "A" },
@@ -85,7 +142,7 @@
         "defaults": { "unit": "bytes", "custom": { "fillOpacity": 15, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
       "id": 4,
       "targets": [
         { "expr": "node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes", "legendFormat": "swap used", "refId": "A" },
@@ -100,7 +157,7 @@
         "defaults": { "unit": "percent", "min": 0, "max": 100, "custom": { "fillOpacity": 20, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
       "id": 5,
       "targets": [
         {
@@ -118,7 +175,7 @@
         "defaults": { "unit": "percent", "min": 0, "max": 100, "custom": { "fillOpacity": 20, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
       "id": 6,
       "targets": [
         {
@@ -132,11 +189,49 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Fraction of time the disk was busy (util%). Near 100% = saturated.",
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "fillOpacity": 20, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "id": 12,
+      "targets": [
+        {
+          "expr": "rate(node_disk_io_time_seconds_total{device!~\"loop.*|dm-.*|sr.*\"}[5m])",
+          "legendFormat": "util {{device}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Disk utilization",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Average wait per I/O (seconds). Rising await with load = storage bottleneck.",
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 15, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "id": 13,
+      "targets": [
+        {
+          "expr": "rate(node_disk_io_time_seconds_total{device!~\"loop.*|dm-.*|sr.*\"}[5m]) / clamp_min(rate(node_disk_reads_completed_total{device!~\"loop.*|dm-.*|sr.*\"}[5m]) + rate(node_disk_writes_completed_total{device!~\"loop.*|dm-.*|sr.*\"}[5m]), 1e-9)",
+          "legendFormat": "await {{device}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Disk await",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": { "unit": "Bps", "custom": { "fillOpacity": 15, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
       "id": 7,
       "targets": [
         { "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|br-.*|docker.*\"}[5m])", "legendFormat": "rx {{device}}", "refId": "A" },
@@ -147,11 +242,39 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Open FDs / sockets / TCP / conntrack — early warning for connection leaks.",
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": "conntrack %" },
+            "properties": [{ "id": "unit", "value": "percentunit" }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "id": 14,
+      "targets": [
+        { "expr": "node_filefd_allocated", "legendFormat": "file descriptors", "refId": "A" },
+        { "expr": "node_sockstat_sockets_used", "legendFormat": "sockets used", "refId": "B" },
+        { "expr": "node_sockstat_TCP_alloc", "legendFormat": "TCP alloc", "refId": "C" },
+        { "expr": "node_netstat_Tcp_CurrEstab", "legendFormat": "TCP established", "refId": "D" },
+        {
+          "expr": "node_nf_conntrack_entries / clamp_min(node_nf_conntrack_entries_limit, 1)",
+          "legendFormat": "conntrack %",
+          "refId": "E"
+        }
+      ],
+      "title": "File descriptors & sockets",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": { "unit": "s", "custom": { "fillOpacity": 10, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 48 },
       "id": 8,
       "targets": [
         { "expr": "time() - node_boot_time_seconds", "legendFormat": "uptime", "refId": "A" }
@@ -165,11 +288,11 @@
         "defaults": { "unit": "Bps", "custom": { "fillOpacity": 15, "lineWidth": 2 } },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 48 },
       "id": 9,
       "targets": [
-        { "expr": "rate(node_disk_read_bytes_total[5m])", "legendFormat": "read {{device}}", "refId": "A" },
-        { "expr": "rate(node_disk_written_bytes_total[5m])", "legendFormat": "write {{device}}", "refId": "B" }
+        { "expr": "rate(node_disk_read_bytes_total{device!~\"loop.*|dm-.*|sr.*\"}[5m])", "legendFormat": "read {{device}}", "refId": "A" },
+        { "expr": "rate(node_disk_written_bytes_total{device!~\"loop.*|dm-.*|sr.*\"}[5m])", "legendFormat": "write {{device}}", "refId": "B" }
       ],
       "title": "Disk I/O",
       "type": "timeseries"
@@ -183,5 +306,5 @@
   "timezone": "browser",
   "title": "Host metrics",
   "uid": "oracle-host-metrics",
-  "version": 1
+  "version": 2
 }

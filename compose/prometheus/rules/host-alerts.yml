@@ -112,6 +112,30 @@ groups:
           summary: "Inode usage above 80%"
           description: "Root inode usage is {{ $value | printf \"%.1f\" }}%."
 
+      - alert: HostIoWaitWarning
+        expr: avg(rate(node_cpu_seconds_total{mode="iowait"}[5m])) > 0.20
+        for: 10m
+        labels:
+          severity: warning
+          layer: host
+        annotations:
+          summary: "CPU iowait above 20%"
+          description: "Average iowait is {{ $value | printf \"%.2f\" }} for more than 10 minutes (disk saturation likely)."
+
+      - alert: HostConntrackWarning
+        expr: |
+          (
+            node_nf_conntrack_entries
+            / clamp_min(node_nf_conntrack_entries_limit, 1)
+          ) > 0.80
+        for: 10m
+        labels:
+          severity: warning
+          layer: host
+        annotations:
+          summary: "Conntrack table above 80%"
+          description: "Conntrack usage is {{ $value | humanizePercentage }} for more than 10 minutes."
+
       - alert: TargetDown
         expr: up == 0
         for: 5m

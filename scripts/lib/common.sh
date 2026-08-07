@@ -25,6 +25,8 @@ SERVICES=(
   cadvisor
   prometheus
   grafana
+  postgres-exporter
+  redis-exporter
 )
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
@@ -121,6 +123,8 @@ service_compose_file() {
     cadvisor) printf '%s\n' "${PROJECT_ROOT}/compose/cadvisor/compose.yml" ;;
     prometheus) printf '%s\n' "${PROJECT_ROOT}/compose/prometheus/compose.yml" ;;
     grafana) printf '%s\n' "${PROJECT_ROOT}/compose/grafana/compose.yml" ;;
+    postgres-exporter) printf '%s\n' "${PROJECT_ROOT}/compose/postgres-exporter/compose.yml" ;;
+    redis-exporter) printf '%s\n' "${PROJECT_ROOT}/compose/redis-exporter/compose.yml" ;;
     *) return 1 ;;
   esac
 }
