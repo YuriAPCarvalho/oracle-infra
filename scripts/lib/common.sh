@@ -21,6 +21,10 @@ SERVICES=(
   rankao-api
   rankao-web
   rankao-adm
+  node-exporter
+  cadvisor
+  prometheus
+  grafana
 )
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
@@ -113,6 +117,10 @@ service_compose_file() {
     rankao-api) printf '%s\n' "${PROJECT_ROOT}/compose/rankao-api/compose.yml" ;;
     rankao-web) printf '%s\n' "${PROJECT_ROOT}/compose/rankao-web/compose.yml" ;;
     rankao-adm) printf '%s\n' "${PROJECT_ROOT}/compose/rankao-adm/compose.yml" ;;
+    node-exporter) printf '%s\n' "${PROJECT_ROOT}/compose/node-exporter/compose.yml" ;;
+    cadvisor) printf '%s\n' "${PROJECT_ROOT}/compose/cadvisor/compose.yml" ;;
+    prometheus) printf '%s\n' "${PROJECT_ROOT}/compose/prometheus/compose.yml" ;;
+    grafana) printf '%s\n' "${PROJECT_ROOT}/compose/grafana/compose.yml" ;;
     *) return 1 ;;
   esac
 }

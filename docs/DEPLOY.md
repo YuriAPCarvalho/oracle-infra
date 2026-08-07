@@ -15,7 +15,7 @@ Este projeto versiona a infraestrutura Docker Compose da VPS Oracle Cloud ARM64.
 - Docker Engine
 - Docker Compose Plugin
 - Usuario com acesso ao Docker ou uso de `sudo`
-- Redes Docker `proxy` e `internal`
+- Redes Docker `proxy`, `internal` e `monitoring`
 
 ## Primeiro deploy
 
@@ -25,7 +25,11 @@ bash bootstrap/02-docker.sh
 bash bootstrap/bootstrap.sh
 ```
 
-O bootstrap cria as redes necessarias, valida os compose files, baixa imagens e sobe Traefik, Portainer, Dozzle e Uptime Kuma.
+O bootstrap cria as redes necessarias, valida os compose files, baixa imagens e sobe Traefik, Portainer, Dozzle, Uptime Kuma, Node Exporter, cAdvisor, Prometheus e Grafana.
+
+Antes do passo Grafana: criar `compose/grafana/.env` a partir do `.env.example`.
+
+Métricas: [METRICS.md](METRICS.md). Grafana só via túnel SSH (`127.0.0.1:3000`).
 
 ## Subir um servico manualmente
 

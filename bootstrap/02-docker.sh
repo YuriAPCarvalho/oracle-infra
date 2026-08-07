@@ -93,6 +93,9 @@ docker network inspect proxy >/dev/null 2>&1 ||
 docker network inspect internal >/dev/null 2>&1 ||
   docker network create --internal internal
 
+docker network inspect monitoring >/dev/null 2>&1 ||
+  docker network create monitoring
+
 echo "==> Validando instalação"
 
 docker version

@@ -29,8 +29,6 @@ async function api(method, path, body) {
 }
 
 const HOSTS = [
-  "gestoragro",
-  "gestoragro-api",
   "s3",
   "minio",
   "uptimekuma",

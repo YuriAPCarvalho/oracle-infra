@@ -3,7 +3,9 @@ SHELL := /usr/bin/env bash
 SERVICE ?=
 TAIL ?= 100
 
-.PHONY: status health logs restart shell backup update validate validate-compose validate-secrets validate-workflows validate-ci shellcheck
+.PHONY: status health logs restart shell backup update validate validate-compose validate-secrets validate-workflows validate-ci validate-prometheus validate-grafana-dashboards shellcheck
+
+PROMETHEUS_IMAGE ?= prom/prometheus:v3.2.1
 
 status:
 	bash scripts/status.sh
@@ -44,16 +46,13 @@ validate-compose:
 		cp compose/minio/.env.example "$$minio_env"; \
 		printf '%s\n' 'MINIO_ROOT_PASSWORD=placeholder-validate-only' >> "$$minio_env"; \
 	fi; \
-	m7api_env="compose/marca7-api/.env"; \
-	if [[ ! -f "$$m7api_env" ]]; then \
-		cp compose/marca7-api/.env.example "$$m7api_env"; \
-		sed -i.bak 's/CHANGE_ME/placeholder-validate-only/g' "$$m7api_env" 2>/dev/null || \
-			sed -i '' 's/CHANGE_ME/placeholder-validate-only/g' "$$m7api_env"; \
-		rm -f "$$m7api_env.bak"; \
-	fi; \
-	m7app_env="compose/marca7-app/.env"; \
-	if [[ ! -f "$$m7app_env" ]]; then \
-		cp compose/marca7-app/.env.example "$$m7app_env"; \
+	gf_env="compose/grafana/.env"; \
+	if [[ ! -f "$$gf_env" ]]; then \
+		cp compose/grafana/.env.example "$$gf_env"; \
+		printf '%s\n' \
+			'GF_SECURITY_ADMIN_USER=admin' \
+			'GF_SECURITY_ADMIN_PASSWORD=placeholder-validate-only' \
+			>> "$$gf_env"; \
 	fi; \
 	for file in compose/*/compose.yml; do \
 		echo "Validating $$file"; \
@@ -68,6 +67,27 @@ validate-compose:
 		'SERVICE_PORT=8080' > "$$template_env"; \
 	echo "Validating templates/docker-service/compose.yml"; \
 	docker compose -f templates/docker-service/compose.yml config -q
+
+validate-prometheus:
+	@set -Eeuo pipefail; \
+	echo "promtool check config"; \
+	docker run --rm --entrypoint promtool \
+		-v "$(CURDIR)/compose/prometheus:/etc/prometheus:ro" \
+		"$(PROMETHEUS_IMAGE)" \
+		check config /etc/prometheus/prometheus.yml; \
+	echo "promtool check rules"; \
+	docker run --rm --entrypoint promtool \
+		-v "$(CURDIR)/compose/prometheus:/etc/prometheus:ro" \
+		"$(PROMETHEUS_IMAGE)" \
+		check rules /etc/prometheus/rules/host-alerts.yml /etc/prometheus/rules/container-alerts.yml
+
+validate-grafana-dashboards:
+	@set -Eeuo pipefail; \
+	for f in compose/grafana/provisioning/dashboards/json/*.json; do \
+		echo "Validating JSON $$f"; \
+		python -c "import json,sys; json.load(open(sys.argv[1], encoding='utf-8'))" "$$f"; \
+	done; \
+	echo "grafana dashboards OK"
 
 validate-secrets:
 	@set -Eeuo pipefail; \
@@ -115,5 +135,7 @@ validate:
 	$(MAKE) shellcheck
 	git diff --check
 	$(MAKE) validate-compose
+	$(MAKE) validate-prometheus
+	$(MAKE) validate-grafana-dashboards
 	$(MAKE) validate-secrets
 	$(MAKE) validate-ci

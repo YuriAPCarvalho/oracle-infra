@@ -8,9 +8,10 @@ Escopo: **129.146.161.65** (Oracle Cloud ARM64). Gestor Agro / Marca7 **não** f
 |-------|------------------|--------|
 | `#infra-alertas` (ou equivalente) | `KUMA_DISCORD_WEBHOOK_URL` em `compose/uptime-kuma/.env` | Uptime Kuma: DOWN/UP de monitores |
 | `#deploys` / `#ci-infra` | GitHub secret `DISCORD_WEBHOOK_URL` | CI/CD: deploy, rollback, falha de healthcheck |
+| `#metrics-alertas` (recomendado) | `GRAFANA_DISCORD_WEBHOOK_URL` em `compose/grafana/.env` | Grafana: CPU/RAM/disco/load/scrape |
 | `#bots` (opcional) | webhooks nos compose dos bots | Eventos funcionais dos bots — não substituem Push |
 
-Nunca misturar o webhook de CI com o do Kuma. Ver [DISCORD_NOTIFICATIONS.md](DISCORD_NOTIFICATIONS.md) e [UPTIME_KUMA.md](UPTIME_KUMA.md).
+Nunca misturar webhooks de CI, Kuma e Grafana. Ver [DISCORD_NOTIFICATIONS.md](DISCORD_NOTIFICATIONS.md), [UPTIME_KUMA.md](UPTIME_KUMA.md) e [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md).
 
 ## Camada A — Disponibilidade (Uptime Kuma)
 
@@ -31,11 +32,15 @@ Regras:
 
 Workflows em [`.github/workflows/reusable-vps-deploy.yml`](../.github/workflows/reusable-vps-deploy.yml). Webhook separado do Kuma.
 
-## Camada C — Opcional
+## Camada C — Métricas (Grafana)
+
+Alertas de recurso via Grafana Alerting → Discord (`GRAFANA_DISCORD_WEBHOOK_URL`). Ver [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md). Não duplica DOWN/UP do Kuma.
+
+## Camada D — Opcional
 
 - **Watchtower**: `WATCHTOWER_NOTIFICATION_URL` — só se quiser aviso de imagem atualizada ([`compose/watchtower/.env.example`](../compose/watchtower/.env.example)).
 
-## Camada D — Sem Discord
+## Camada E — Sem Discord
 
 - Heartbeats OK do Kuma.
 - `make health` local — usar Kuma ou logs, não duplicar webhook.

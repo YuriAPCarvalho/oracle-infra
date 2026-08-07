@@ -1,0 +1,123 @@
+groups:
+  - name: host-alerts
+    rules:
+      - alert: HostDiskUsageWarning
+        expr: |
+          (
+            100 - (
+              (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"} * 100)
+              / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"}
+            )
+          ) > 80
+        for: 10m
+        labels:
+          severity: warning
+          layer: host
+        annotations:
+          summary: "Disk usage above 80% on {{ $labels.instance }}"
+          description: "Root filesystem usage is {{ $value | printf \"%.1f\" }}% for more than 10 minutes."
+
+      - alert: HostDiskUsageCritical
+        expr: |
+          (
+            100 - (
+              (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"} * 100)
+              / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"}
+            )
+          ) > 90
+        for: 5m
+        labels:
+          severity: critical
+          layer: host
+        annotations:
+          summary: "Disk usage above 90% on {{ $labels.instance }}"
+          description: "Root filesystem usage is {{ $value | printf \"%.1f\" }}% for more than 5 minutes."
+
+      - alert: HostMemoryAvailableWarning
+        expr: |
+          (
+            node_memory_MemAvailable_bytes
+            / node_memory_MemTotal_bytes
+          ) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+          layer: host
+        annotations:
+          summary: "Available memory below 15%"
+          description: "Only {{ $value | printf \"%.1f\" }}% memory available for more than 10 minutes."
+
+      - alert: HostMemoryAvailableCritical
+        expr: |
+          (
+            node_memory_MemAvailable_bytes
+            / node_memory_MemTotal_bytes
+          ) * 100 < 8
+        for: 5m
+        labels:
+          severity: critical
+          layer: host
+        annotations:
+          summary: "Available memory below 8%"
+          description: "Only {{ $value | printf \"%.1f\" }}% memory available for more than 5 minutes."
+
+      - alert: HostSwapUsageWarning
+        expr: |
+          (
+            (node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes)
+            / clamp_min(node_memory_SwapTotal_bytes, 1)
+          ) * 100 > 25
+        for: 15m
+        labels:
+          severity: warning
+          layer: host
+        annotations:
+          summary: "Swap usage above 25%"
+          description: "Swap usage is {{ $value | printf \"%.1f\" }}% for more than 15 minutes."
+
+      - alert: HostLoadWarning
+        # 2 OCPU host: warn when 1m load stays above core count
+        expr: node_load1 > 2
+        for: 10m
+        labels:
+          severity: warning
+          layer: host
+        annotations:
+          summary: "1m load average above 2"
+          description: "Load1 is {{ $value | printf \"%.2f\" }} (2 OCPU) for more than 10 minutes."
+
+      - alert: HostLoadCritical
+        expr: node_load1 > 4
+        for: 5m
+        labels:
+          severity: critical
+          layer: host
+        annotations:
+          summary: "1m load average above 4"
+          description: "Load1 is {{ $value | printf \"%.2f\" }} (2 OCPU) for more than 5 minutes."
+
+      - alert: HostInodeUsageWarning
+        expr: |
+          (
+            100 - (
+              (node_filesystem_files_free{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"} * 100)
+              / clamp_min(node_filesystem_files{fstype!~"tmpfs|overlay|squashfs",mountpoint="/"}, 1)
+            )
+          ) > 80
+        for: 10m
+        labels:
+          severity: warning
+          layer: host
+        annotations:
+          summary: "Inode usage above 80%"
+          description: "Root inode usage is {{ $value | printf \"%.1f\" }}%."
+
+      - alert: TargetDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+          layer: scrape
+        annotations:
+          summary: "Prometheus target down: {{ $labels.job }}"
+          description: "Scrape target {{ $labels.instance }} (job {{ $labels.job }}) has been down for more than 5 minutes."

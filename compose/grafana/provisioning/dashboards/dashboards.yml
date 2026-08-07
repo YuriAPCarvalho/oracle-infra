@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: oracle-infra
+    orgId: 1
+    folder: Oracle Infra
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 60
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
+      foldersFromFilesStructure: false

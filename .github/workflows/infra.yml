@@ -42,10 +42,38 @@ jobs:
             cp compose/postgres/.env.example "${pg_env}"
             echo 'POSTGRES_PASSWORD=placeholder-validate-only' >> "${pg_env}"
           fi
+          gf_env="compose/grafana/.env"
+          if [[ ! -f "${gf_env}" ]]; then
+            cp compose/grafana/.env.example "${gf_env}"
+            {
+              echo 'GF_SECURITY_ADMIN_USER=admin'
+              echo 'GF_SECURITY_ADMIN_PASSWORD=placeholder-validate-only'
+            } >> "${gf_env}"
+          fi
           while IFS= read -r -d '' file; do
             echo "Validating ${file}"
             docker compose -f "${file}" config -q
           done < <(find compose -name 'compose.yml' -print0)
+
+      - name: Validate Prometheus config and rules
+        run: |
+          set -Eeuo pipefail
+          docker run --rm --entrypoint promtool \
+            -v "${{ github.workspace }}/compose/prometheus:/etc/prometheus:ro" \
+            prom/prometheus:v3.2.1 \
+            check config /etc/prometheus/prometheus.yml
+          docker run --rm --entrypoint promtool \
+            -v "${{ github.workspace }}/compose/prometheus:/etc/prometheus:ro" \
+            prom/prometheus:v3.2.1 \
+            check rules /etc/prometheus/rules/host-alerts.yml /etc/prometheus/rules/container-alerts.yml
+
+      - name: Validate Grafana dashboard JSON
+        run: |
+          set -Eeuo pipefail
+          for f in compose/grafana/provisioning/dashboards/json/*.json; do
+            echo "Validating ${f}"
+            python3 -c "import json,sys; json.load(open(sys.argv[1], encoding='utf-8'))" "${f}"
+          done
 
       - name: Validate service template
         run: |

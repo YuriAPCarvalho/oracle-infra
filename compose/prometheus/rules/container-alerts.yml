@@ -1,0 +1,30 @@
+groups:
+  - name: container-alerts
+    rules:
+      # Conservative starter rules only. Per-container CPU/memory baselines
+      # should be tuned after several days of history (avoid Chromium spikes).
+      - alert: ContainerMemoryHigh
+        expr: |
+          (
+            container_memory_working_set_bytes{name=~".+",name!=""}
+            / clamp_min(container_spec_memory_limit_bytes{name=~".+",name!=""}, 1)
+          ) * 100 > 90
+          and container_spec_memory_limit_bytes{name=~".+",name!=""} > 0
+        for: 15m
+        labels:
+          severity: warning
+          layer: container
+        annotations:
+          summary: "Container {{ $labels.name }} near memory limit"
+          description: "Working set is {{ $value | printf \"%.1f\" }}% of the container memory limit for 15 minutes."
+
+      - alert: ContainerRestarting
+        expr: |
+          changes(container_start_time_seconds{name=~".+",name!=""}[15m]) > 2
+        for: 5m
+        labels:
+          severity: warning
+          layer: container
+        annotations:
+          summary: "Container {{ $labels.name }} restarting frequently"
+          description: "Multiple container starts detected in the last 15 minutes."

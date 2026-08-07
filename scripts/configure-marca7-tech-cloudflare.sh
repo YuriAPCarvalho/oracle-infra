@@ -29,8 +29,6 @@ echo "== SSL Full (strict) =="
 api PATCH "/zones/${ZONE_ID}/settings/ssl" --data '{"value":"strict"}' | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("success"), d.get("result",{}).get("value"), d.get("errors"))'
 
 HOSTS=(
-  gestoragro
-  api.gestoragro
   s3
   minio
   uptimekuma

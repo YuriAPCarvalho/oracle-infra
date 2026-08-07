@@ -179,6 +179,8 @@ check_persistent_dirs() {
     /opt/docker/gold-api/auth_info
     /opt/docker/redis/data
     /opt/docker/waha/sessions
+    /opt/docker/prometheus/data
+    /opt/docker/grafana/data
   )
 
   for dir in "${dirs[@]}"; do
@@ -239,6 +241,7 @@ main() {
 
   run_check "proxy network" check_network proxy
   run_check "internal network" check_network internal
+  run_check "monitoring network" check_network monitoring
   run_check "Volumes" check_volumes
   run_check "Persistent data" check_persistent_dirs
   run_check "Docker socket" check_docker_socket

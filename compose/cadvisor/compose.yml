@@ -1,0 +1,42 @@
+services:
+  cadvisor:
+    image: ghcr.io/google/cadvisor:0.56.2
+    container_name: cadvisor
+    restart: unless-stopped
+    # Docker 29 + overlayfs/containerd-snapshotter + cgroup v2 on this VPS.
+    # privileged is required for full cgroup/device visibility; exposure is
+    # limited to the external monitoring network (no host ports, no Traefik).
+    privileged: true
+    cgroup: host
+    devices:
+      - /dev/kmsg
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=15s
+      - --store_container_labels=false
+      - --enable_metrics=cpu,memory,network,diskIO,disk,oom_event,processes
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+      - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
+    networks:
+      - monitoring
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:8080/metrics | grep -q container_memory_working_set_bytes || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+networks:
+  monitoring:
+    external: true
+    name: monitoring

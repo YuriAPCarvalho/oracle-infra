@@ -16,7 +16,7 @@ Mostra host, IP, sistema, kernel, arquitetura, CPU, RAM, swap, disco, load avera
 make health
 ```
 
-Valida Docker, Compose, disco, RAM, swap, CPU, load average, internet, DNS, servicos, redes `proxy` e `internal`, volumes, diretorios persistentes e socket Docker.
+Valida Docker, Compose, disco, RAM, swap, CPU, load average, internet, DNS, servicos, redes `proxy`, `internal` e `monitoring`, volumes, diretorios persistentes e socket Docker.
 
 ## Uptime Kuma
 
@@ -26,6 +26,20 @@ Painel em `127.0.0.1:8082` (tunel SSH). Monitores da stack: ver [UPTIME_KUMA.md]
 bash scripts/uptime-kuma-seed-monitors.sh
 bash scripts/uptime-kuma-seed-discord.sh   # requer compose/uptime-kuma/.env com KUMA_DISCORD_WEBHOOK_URL
 bash scripts/uptime-kuma-verify-notifications.sh
+```
+
+## Métricas (Prometheus / Grafana)
+
+Ver [METRICS.md](METRICS.md). Grafana em `127.0.0.1:3000` (túnel SSH).
+
+```bash
+make logs SERVICE=prometheus
+make logs SERVICE=grafana
+make restart SERVICE=grafana
+bash bootstrap/07-node-exporter.sh
+bash bootstrap/08-cadvisor.sh
+bash bootstrap/09-prometheus.sh
+bash bootstrap/10-grafana.sh
 ```
 
 ## Logs
@@ -93,7 +107,7 @@ make validate-ci
 make validate
 ```
 
-`make validate` executa sintaxe Bash, ShellCheck, `git diff --check`, validacao dos Compose existentes, validacao do template de servico, checks basicos contra `.env` real ou segredos obvios, actionlint nos workflows e dry-run do payload Discord (sem envio).
+`make validate` executa sintaxe Bash, ShellCheck, `git diff --check`, validacao dos Compose, Prometheus (`promtool`), dashboards Grafana JSON, checks de segredos, actionlint e dry-run Discord (sem envio).
 
 `make validate-ci` foca na base CI/CD (workflows, templates documentais, notify dry-run).
 

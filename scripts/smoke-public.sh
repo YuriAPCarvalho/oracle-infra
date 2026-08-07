@@ -9,8 +9,6 @@ for r in sorted(d, key=lambda x: x.get("name","")):
 PY
 echo "=== public smoke ==="
 for u in \
-  https://gestoragro.marca7.tech/ \
-  https://gestoragro-api.marca7.tech/health \
   https://s3.marca7.tech/ \
   https://portainer.marca7.tech/ \
   https://minio.marca7.tech/ \

@@ -1,0 +1,31 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: discord-metrics
+    receivers:
+      - uid: discord-metrics
+        type: discord
+        disableResolveMessage: false
+        settings:
+          # Interpolated from GRAFANA_DISCORD_WEBHOOK_URL in the container env.
+          # Leave unset until ready; do not put a real URL in Git.
+          url: $GRAFANA_DISCORD_WEBHOOK_URL
+          message: |
+            {{ template "default.message" . }}
+
+policies:
+  - orgId: 1
+    receiver: discord-metrics
+    group_by:
+      - grafana_folder
+      - alertname
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    routes:
+      - receiver: discord-metrics
+        object_matchers:
+          - - severity
+            - =~
+            - warning|critical

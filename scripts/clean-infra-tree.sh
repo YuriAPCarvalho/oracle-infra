@@ -15,6 +15,3 @@ else
   git status --porcelain
   exit 1
 fi
-echo "=== app env hosts ==="
-grep '^SERVICE_HOST=' compose/marca7-app/.env || true
-grep '^SERVICE_IMAGE=' compose/marca7-app/.env || true

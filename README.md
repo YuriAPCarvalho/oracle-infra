@@ -12,6 +12,7 @@ Infraestrutura versionada da VPS Oracle Cloud ARM64, baseada em Docker Compose.
 - Portainer
 - Dozzle
 - Uptime Kuma
+- Node Exporter / cAdvisor / Prometheus / Grafana (métricas; acesso Grafana só por túnel SSH)
 
 ## Estrutura
 
@@ -77,11 +78,11 @@ Concluida:
 
 ### Fase 2 - Observabilidade
 
-Em andamento com ScriptGold:
+Concluída / em operação:
 
-- Uptime Kuma monitors HTTP para `gold-api` / `gold-admin`;
-- Dozzle / Portainer para logs e ops;
-- `/health` nos apps.
+- Uptime Kuma (disponibilidade);
+- Dozzle / Portainer (logs e ops);
+- Node Exporter + cAdvisor + Prometheus + Grafana (métricas históricas; ver [METRICS.md](docs/METRICS.md)).
 
 ### Fase 3 - DNS e HTTPS
 
@@ -114,7 +115,10 @@ Base **experimental** disponivel:
 - [Operations](docs/OPERATIONS.md)
 - [Uptime Kuma](docs/UPTIME_KUMA.md)
 - [Notificações (Oracle VPS)](docs/NOTIFICATIONS.md)
-- [Gestor Agro](docs/GESTOR_AGRO.md) (Hostinger — fora da VPS Oracle)
+- [Metrics](docs/METRICS.md)
+- [Prometheus](docs/PROMETHEUS.md)
+- [Grafana](docs/GRAFANA.md)
+- [Grafana Alerting](docs/GRAFANA_ALERTING.md)
 - [Application Deployment](docs/APPLICATION_DEPLOYMENT.md)
 - [CI/CD](docs/CI_CD.md)
 - [Discord Notifications](docs/DISCORD_NOTIFICATIONS.md)

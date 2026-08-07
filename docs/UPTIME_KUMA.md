@@ -2,7 +2,7 @@
 
 Monitoramento HTTP da stack de infra na **VPS Oracle**.
 
-Gestor Agro (Marca7) roda em outro servidor — não incluir monitores `marca7-*` nesta instância. Ver [GESTOR_AGRO.md](GESTOR_AGRO.md) / [MARCA7_TECH_DNS_ACCESS.md](MARCA7_TECH_DNS_ACCESS.md).
+Gestor Agro (Marca7 app/api) roda em outro servidor — não incluir monitores `marca7-*` nesta instância. Ver [MARCA7_TECH_DNS_ACCESS.md](MARCA7_TECH_DNS_ACCESS.md) para DNS dos painéis `*.marca7.tech`.
 
 ## Acesso
 

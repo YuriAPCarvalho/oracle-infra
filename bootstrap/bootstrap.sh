@@ -10,17 +10,29 @@ log() {
   printf '============================================================\n'
 }
 
-log "03/06 - Traefik"
+log "03/10 - Traefik"
 "${SCRIPT_DIR}/03-traefik.sh"
 
-log "04/06 - Portainer"
+log "04/10 - Portainer"
 "${SCRIPT_DIR}/04-portainer.sh"
 
-log "05/06 - Dozzle"
+log "05/10 - Dozzle"
 "${SCRIPT_DIR}/05-dozzle.sh"
 
-log "06/06 - Uptime Kuma"
+log "06/10 - Uptime Kuma"
 "${SCRIPT_DIR}/06-uptime-kuma.sh"
+
+log "07/10 - Node Exporter"
+"${SCRIPT_DIR}/07-node-exporter.sh"
+
+log "08/10 - cAdvisor"
+"${SCRIPT_DIR}/08-cadvisor.sh"
+
+log "09/10 - Prometheus"
+"${SCRIPT_DIR}/09-prometheus.sh"
+
+log "10/10 - Grafana"
+"${SCRIPT_DIR}/10-grafana.sh"
 
 log "Infraestrutura iniciada com sucesso"
 

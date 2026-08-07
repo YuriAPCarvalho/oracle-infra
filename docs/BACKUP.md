@@ -9,7 +9,17 @@ O backup operacional e gerado por `scripts/backup.sh`.
 - `bootstrap/`
 - `scripts/`
 - `docs/`
-- `/opt/docker` (inclui dados de servicos e `/opt/docker/deploy-state/` do CI/CD)
+- `/opt/docker` (inclui dados de servicos, `/opt/docker/deploy-state/` do CI/CD, `/opt/docker/prometheus/`, `/opt/docker/grafana/`)
+
+Node Exporter e cAdvisor não possuem dados persistentes relevantes.
+
+### Prometheus (TSDB)
+
+Copiar a TSDB com o Prometheus em escrita pode gerar backup inconsistente. Esta stack trata métricas históricas como **não críticas / reconstruíveis**. Não habilitar Admin API só para snapshot sem revisar o risco. Detalhes: [PROMETHEUS.md](PROMETHEUS.md).
+
+### Grafana
+
+O diretório `/opt/docker/grafana/data` (usuários, dashboards provisionados em runtime, contact points) **deve** entrar no backup — já coberto por `/opt/docker`.
 
 ## Executar
 
