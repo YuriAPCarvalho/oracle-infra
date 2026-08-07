@@ -14,8 +14,10 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
-      MINIO_SERVER_URL: ${MINIO_SERVER_URL:-https://s3.marca7.tech}
-      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-https://minio.marca7.tech}
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL:-https://s3.chamaeu.app}
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-https://minio.chamaeu.app}
+      # Internal scrape only (Docker monitoring network). Do not expose metrics publicly.
+      MINIO_PROMETHEUS_AUTH_TYPE: public
 
     volumes:
       - /opt/docker/minio/data:/data
@@ -26,6 +28,7 @@ services:
     networks:
       - internal
       - proxy
+      - monitoring
 
     labels:
       - traefik.enable=true
@@ -33,11 +36,11 @@ services:
       # S3 API
       - traefik.http.middlewares.minio-https.redirectscheme.scheme=https
       - traefik.http.middlewares.minio-https.redirectscheme.permanent=true
-      - traefik.http.routers.minio-http.rule=Host(`${SERVICE_HOST:-s3.marca7.tech}`)
+      - traefik.http.routers.minio-http.rule=Host(`${SERVICE_HOST:-s3.chamaeu.app}`)
       - traefik.http.routers.minio-http.entrypoints=web
       - traefik.http.routers.minio-http.middlewares=minio-https
       - traefik.http.routers.minio-http.service=minio
-      - traefik.http.routers.minio.rule=Host(`${SERVICE_HOST:-s3.marca7.tech}`)
+      - traefik.http.routers.minio.rule=Host(`${SERVICE_HOST:-s3.chamaeu.app}`)
       - traefik.http.routers.minio.entrypoints=websecure
       - traefik.http.routers.minio.tls=true
       - traefik.http.routers.minio.tls.certresolver=letsencrypt
@@ -46,11 +49,11 @@ services:
       # Console UI
       - traefik.http.middlewares.minio-console-https.redirectscheme.scheme=https
       - traefik.http.middlewares.minio-console-https.redirectscheme.permanent=true
-      - traefik.http.routers.minio-console-http.rule=Host(`${CONSOLE_HOST:-minio.marca7.tech}`)
+      - traefik.http.routers.minio-console-http.rule=Host(`${CONSOLE_HOST:-minio.chamaeu.app}`)
       - traefik.http.routers.minio-console-http.entrypoints=web
       - traefik.http.routers.minio-console-http.middlewares=minio-console-https
       - traefik.http.routers.minio-console-http.service=minio-console
-      - traefik.http.routers.minio-console.rule=Host(`${CONSOLE_HOST:-minio.marca7.tech}`)
+      - traefik.http.routers.minio-console.rule=Host(`${CONSOLE_HOST:-minio.chamaeu.app}`)
       - traefik.http.routers.minio-console.entrypoints=websecure
       - traefik.http.routers.minio-console.tls=true
       - traefik.http.routers.minio-console.tls.certresolver=letsencrypt
@@ -65,3 +68,7 @@ networks:
   proxy:
     external: true
     name: proxy
+
+  monitoring:
+    external: true
+    name: monitoring

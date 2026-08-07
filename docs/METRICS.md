@@ -29,6 +29,7 @@ Prometheus --> cadvisor:8080
 Prometheus --> traefik:8082
 Prometheus --> postgres-exporter:9187
 Prometheus --> redis-exporter:9121
+Prometheus --> minio:9000 (/minio/v2/metrics/cluster)
 ```
 
 ## Bootstrap
@@ -88,6 +89,7 @@ Pasta **Oracle Infra**:
 | Container metrics | CPU/RAM/rede/disco por container, restarts, PSI, idade |
 | Data layer | Postgres (conexões, tamanho, locks, txs) + Redis (mem, hit ratio, keys) |
 | Edge (Traefik) | req/s, 4xx/5xx, latência p50/p95, bytes |
+| MinIO | scrape up, capacidade, objetos, tráfego S3, bucket usage |
 
 Alertas Discord: disco/memória/iowait/conntrack/scrape — ver [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md).
 

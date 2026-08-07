@@ -38,9 +38,11 @@ Guia: [OCI Object Storage S3 Compatibility](https://docs.oracle.com/en-us/iaas/C
 
 | Opção escolhida | Data | Responsável |
 |-----------------|------|-------------|
-| **A — OCI Object Storage** (default do plano até revisão) | 2026-03-27 | migração ChamaEu |
+| **B — MinIO na VPS** (ativo em `s3.chamaeu.app` / `minio.chamaeu.app`) | 2026-08-07 | ops ChamaEu |
 
-> Se o bucket Railway exceder ~20 GiB ou a sync OCI falhar, reavaliar **B** com o operador.
+Console: Cloudflare Access. S3 API: sem Access (credenciais MinIO). Bucket default: `chamaeu`.
+
+> OCI Object Storage (opção A) permanece alternativa se o volume local ficar apertado.
 
 ## Sync pós-decisão
 

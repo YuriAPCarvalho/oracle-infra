@@ -166,6 +166,12 @@ seed_chamaeu_monitors() {
   insert_http_monitor "chamaeu-web-internal" "http://rankao-web:3000/" 0 120 3 "" "" 15 0
   insert_http_monitor "chamaeu-adm-internal" "http://rankao-adm:3000/" 0 120 3 "" "" 15 0
 
+  # MinIO — internal health + public S3 API (no Access on s3.*)
+  insert_http_monitor "minio-health" \
+    "http://minio:9000/minio/health/live" 0 60 3 "" "" 10 0
+  insert_http_monitor "minio-s3-public" \
+    "https://s3.chamaeu.app/minio/health/live" 0 120 3 "" "" 15 0
+
   if should_seed_waha_monitors; then
     load_env_file "${WAHA_ENV_FILE}"
     if [[ -z "${WAHA_API_KEY:-}" ]]; then

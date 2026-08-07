@@ -42,7 +42,15 @@ async function api(method, path, body) {
 }
 
 /** Subdomínios A → VPS (proxied). Não inclui @, api, adm (app público). */
-const PANEL_DNS_HOSTS = ["uptimekuma", "dozzle", "portainer", "traefik", "grafana"];
+const PANEL_DNS_HOSTS = [
+  "uptimekuma",
+  "dozzle",
+  "portainer",
+  "traefik",
+  "grafana",
+  "minio",
+  "s3",
+];
 
 const ACCESS_APPS = [
   ["Uptime Kuma", "uptimekuma.chamaeu.app"],
@@ -50,6 +58,7 @@ const ACCESS_APPS = [
   ["Portainer", "portainer.chamaeu.app"],
   ["Traefik", "traefik.chamaeu.app"],
   ["Grafana", "grafana.chamaeu.app"],
+  ["MinIO Console", "minio.chamaeu.app"],
 ];
 
 async function main() {

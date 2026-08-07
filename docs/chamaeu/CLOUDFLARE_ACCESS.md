@@ -11,8 +11,9 @@ Padrão igual [MARCA7_TECH_DNS_ACCESS.md](../MARCA7_TECH_DNS_ACCESS.md): **DNS p
 | Portainer | https://portainer.chamaeu.app | Sim |
 | Traefik | https://traefik.chamaeu.app | Sim |
 | Grafana | https://grafana.chamaeu.app | Sim |
+| MinIO Console | https://minio.chamaeu.app | Sim |
 
-**Sem Access** (público): `chamaeu.app`, `api.chamaeu.app`, `adm.chamaeu.app`.
+**Sem Access** (público / auth própria): `chamaeu.app`, `api.chamaeu.app`, `adm.chamaeu.app`, `s3.chamaeu.app` (MinIO S3 API).
 
 ## 1. Cloudflare (API)
 
@@ -38,6 +39,9 @@ node scripts/configure-chamaeu-cloudflare-access.mjs
 | Portainer (ChamaEu) | `portainer.chamaeu.app` |
 | Traefik (ChamaEu) | `traefik.chamaeu.app` |
 | Grafana (ChamaEu) | `grafana.chamaeu.app` |
+| MinIO Console (ChamaEu) | `minio.chamaeu.app` |
+
+DNS A proxied também: `s3.chamaeu.app` (**sem** Access).
 
 Cria/atualiza registros **A** proxied e applications Access com IdP **Cloudflare** + **One-time PIN** (quando o token tiver permissão).
 
@@ -62,6 +66,12 @@ SERVICE_HOST=traefik.chamaeu.app
 
 # compose/grafana/.env (manter admin user/password; só acrescentar host)
 SERVICE_HOST=grafana.chamaeu.app
+
+# compose/minio/.env (manter MINIO_ROOT_*; só hosts/URLs)
+SERVICE_HOST=s3.chamaeu.app
+CONSOLE_HOST=minio.chamaeu.app
+MINIO_SERVER_URL=https://s3.chamaeu.app
+MINIO_BROWSER_REDIRECT_URL=https://minio.chamaeu.app
 ```
 
 Recriar stacks:
@@ -75,6 +85,7 @@ docker compose -f compose/dozzle/compose.yml up -d --force-recreate
 docker compose -f compose/portainer/compose.yml up -d --force-recreate
 docker compose -f compose/traefik/compose.yml up -d --force-recreate
 docker compose -f compose/grafana/compose.yml up -d --force-recreate
+docker compose -f compose/minio/compose.yml up -d --force-recreate
 docker restart traefik   # se labels do dashboard não atualizarem
 ```
 
@@ -95,8 +106,9 @@ Discord: `compose/uptime-kuma/.env` + `bash scripts/uptime-kuma-seed-discord.sh`
 ## Smoke
 
 1. Abrir `https://portainer.chamaeu.app` → tela **Cloudflare Access** → login e-mail.
-2. Depois do login, UI Portainer / Kuma / Dozzle / Grafana (`https://grafana.chamaeu.app`).
+2. Depois do login, UI Portainer / Kuma / Dozzle / Grafana / MinIO Console (`https://minio.chamaeu.app`).
 3. `https://api.chamaeu.app/health` → **sem** Access, 200 JSON.
+4. `https://s3.chamaeu.app/minio/health/live` → **sem** Access, 200 (S3 API).
 
 ## 4. WAF / geo BR (opcional — **não aplicado**)
 

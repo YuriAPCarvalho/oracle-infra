@@ -36,6 +36,7 @@ else
     chamaeu-api-health chamaeu-web chamaeu-adm
     chamaeu-api-internal chamaeu-waha-server chamaeu-waha-session
     chamaeu-api-tls chamaeu-web-tls chamaeu-adm-tls
+    minio-health minio-s3-public
   )
 fi
 

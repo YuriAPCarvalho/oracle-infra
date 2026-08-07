@@ -3,7 +3,7 @@
 #
 # Usage (on VPS):
 #   bash scripts/minio-create-bucket.sh
-#   bash scripts/minio-create-bucket.sh --bucket marca7-estoque
+#   bash scripts/minio-create-bucket.sh --bucket chamaeu
 #
 set -Eeuo pipefail
 
@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 
 ENV_FILE="${PROJECT_ROOT}/compose/minio/.env"
-BUCKET="marca7-estoque"
+BUCKET="${MINIO_BUCKET:-chamaeu}"
 CONTAINER="minio"
 NETWORK="internal"
 
