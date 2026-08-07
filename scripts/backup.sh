@@ -116,10 +116,21 @@ main() {
   rm -f -- "${BACKUP_PARTIAL_FILE}" "${BACKUP_FILE}" "${checksum_file}"
 
   info "Creating backup ${BACKUP_FILE}"
+  # GNU tar exits 1 when a file changes while being read (common with live Traefik logs).
+  # Treat that as success for operational live backups; fail on real errors (>=2).
+  set +e
   if [[ "${needs_privileged_tar}" == "true" ]]; then
     run_privileged tar "${tar_args[@]}"
   else
     tar "${tar_args[@]}"
+  fi
+  tar_rc=$?
+  set -e
+  if [[ "${tar_rc}" -gt 1 ]]; then
+    die "tar failed with exit code ${tar_rc}"
+  fi
+  if [[ "${tar_rc}" -eq 1 ]]; then
+    warn "tar reported files changed during read (exit 1); archive kept for live backup."
   fi
 
   set_backup_file_permissions "${BACKUP_PARTIAL_FILE}" "${original_user}" "${original_group}" "${needs_privileged_tar}"
