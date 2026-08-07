@@ -15,24 +15,19 @@ Registrar **Total Size** abaixo:
 
 ## Opções
 
-### A) OCI Object Storage (Always Free) — **recomendado**
+### A) OCI Object Storage (Always Free) — alternativa / Camada 3
 
 - ~20 GiB gratuitos na home region.
 - Dados fora da VPS (sobrevive à perda do VM).
 - API S3-compatible: Customer Secret Keys + namespace + regional endpoint.
-- Variáveis na `rankao-api`:
-  - `AWS_ENDPOINT_URL=https://<namespace>.compat.objectstorage.<region>.oraclecloud.com`
-  - `AWS_DEFAULT_REGION=<region>` (ex.: `sa-saopaulo-1`)
-  - Bucket + keys OCI.
+- **Nesta arquitetura:** uso preferencial como **backup offsite (Camada 3)**, não como primary dos buckets de app se o volume crescer além de 20 GiB.
+- Guia: [OCI Object Storage S3 Compatibility](https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/s3compatibleapi.htm) · [docs/OCI_STORAGE.md](../../docs/OCI_STORAGE.md).
 
-Guia: [OCI Object Storage S3 Compatibility](https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/s3compatibleapi.htm).
+### B) MinIO na VPS (primary ativo)
 
-### B) MinIO na VPS (fallback)
-
-- Usa disco local (`/opt/docker/minio/data`).
-- Já existe compose em [`compose/minio/`](../../compose/minio/compose.yml) (padrão Marca7).
-- Para ChamaEu: bucket dedicado `chamaeu`, subdomínios `s3.chamaeu.app` / console (ajustar `SERVICE_HOST` no `.env`).
-- Escolher se uso > ~20 GiB ou preferir evitar console OCI.
+- Disco local: `/opt/docker/object-storage/minio/data` (nunca sob `databases/`).
+- Compose: [`compose/minio/`](../../compose/minio/compose.yml).
+- Bucket dedicado `chamaeu`, hosts `s3.chamaeu.app` / `minio.chamaeu.app`.
 
 ## Decisão registrada
 
@@ -42,7 +37,9 @@ Guia: [OCI Object Storage S3 Compatibility](https://docs.oracle.com/en-us/iaas/C
 
 Console: Cloudflare Access. S3 API: sem Access (credenciais MinIO). Bucket default: `chamaeu`.
 
-> OCI Object Storage (opção A) permanece alternativa se o volume local ficar apertado.
+> OCI Object Storage (opção A) permanece Camada 3 de backup e fallback se o volume local ficar apertado.
+
+Layout completo: [docs/STORAGE_ARCHITECTURE.md](../../docs/STORAGE_ARCHITECTURE.md).
 
 ## Sync pós-decisão
 

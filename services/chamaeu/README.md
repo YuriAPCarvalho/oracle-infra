@@ -22,7 +22,9 @@ Uptime Kuma: `bash scripts/uptime-kuma-seed-chamaeu-monitors.sh` (ou seed comple
 ```bash
 cd /opt/infra
 bash scripts/postgres-create-db.sh --name rankao --password '***'
-sudo mkdir -p /opt/docker/redis/data /opt/docker/waha/sessions
+sudo mkdir -p /opt/docker/databases/redis/data /opt/docker/applications/waha/sessions
+# ou: bash scripts/storage-prepare-dirs.sh
+
 sudo chown -R ubuntu:ubuntu /opt/docker/redis /opt/docker/waha
 
 cd compose/redis && cp .env.example .env && docker compose up -d

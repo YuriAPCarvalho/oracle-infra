@@ -21,10 +21,12 @@ services:
       - --no-collector.nfs
       - --no-collector.nfsd
       - --no-collector.xfs
+      - --collector.textfile.directory=/textfile
     volumes:
       - /:/rootfs:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+      - /opt/docker/monitoring/node-exporter/textfile:/textfile:ro
     networks:
       - monitoring
     security_opt:

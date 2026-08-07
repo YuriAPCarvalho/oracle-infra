@@ -8,7 +8,7 @@ docker run --privileged --rm tonistiigi/binfmt --install amd64
 
 Compose: `platform: linux/amd64`, `WHATSAPP_DEFAULT_ENGINE=GOWS` (see `compose/waha/compose.yml`).
 
-Trocar de WEBJS → GOWS exige **novo pareamento** (QR); dados de sessão WEBJS em `/opt/docker/waha/sessions` não são reutilizáveis.
+Trocar de WEBJS → GOWS exige **novo pareamento** (QR); dados de sessão WEBJS em `/opt/docker/applications/waha/sessions` não são reutilizáveis.
 
 Imagem nativa ARM sem browser: `devlikeapro/waha:noweb-arm` + `NOWEB` (alternativa futura se existir `gows-arm`).
 

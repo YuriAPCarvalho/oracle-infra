@@ -10,7 +10,7 @@ services:
     command: redis-server --appendonly yes
 
     volumes:
-      - /opt/docker/redis/data:/data
+      - /opt/docker/databases/redis/data:/data
 
     networks:
       - internal

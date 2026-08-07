@@ -35,7 +35,7 @@ Também:
 - analytics/reporting desabilitados
 - plugins não assinados não liberados
 - cookie secure (HTTPS)
-- persistência em `/opt/docker/grafana/data` (UID `472`)
+- persistência em `/opt/docker/monitoring/grafana/data` (UID `472`)
 - redes `monitoring` (Prometheus) + `proxy` (Traefik)
 
 Copiar de [`compose/grafana/.env.example`](../compose/grafana/.env.example).

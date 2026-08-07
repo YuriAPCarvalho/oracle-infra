@@ -10,7 +10,7 @@ NestJS API + landing + Baileys WhatsApp + Telegram. Migrado da Railway.
 
 ## Persistencia
 
-- `/opt/docker/gold-api/auth_info` → `/data/auth_info` (sessao Baileys)
+- `/opt/docker/applications/gold-api/auth_info` → `/data/auth_info` (sessao Baileys)
 
 ## Rede
 

@@ -26,12 +26,22 @@ Se a variável não estiver no `.env`, o Compose usa um noop local (`http://127.
 
 ### Host (Prometheus + espelho Grafana)
 
-- Disco warning 80%/10m · critical 90%/5m
+- Disco **boot** (`/`) warning 80%/10m · critical 90%/5m
+- Disco **Block Volume** (`/opt/docker`) warning 80%/10m · critical 90%/5m (no-data OK até mount separado)
+- Espaço livre &lt; 2 GiB em `/` ou `/opt/docker`
 - Memória disponível warning &lt;15%/10m · critical &lt;8%/5m
 - Swap warning &gt;25%/15m
 - Load (2 OCPU): warning load1&gt;2/10m · critical &gt;4/5m
 - Inodes warning &gt;80%/10m
 - TargetDown `up==0` por 5m
+
+### Storage / backup (`storage-alerts.yml`)
+
+- `BackupStale` — marcador `.last-success` &gt; 36h
+- `BackupNeverSucceeded` — métrica ausente/zero
+- Crescimento anormal de `backups/full`, MinIO e Postgres (textfile `infra_storage_dir_bytes`)
+
+Requer cron de [`scripts/metrics/storage-textfile.sh`](../scripts/metrics/storage-textfile.sh). Dashboard: **Storage volumes**.
 
 ### Containers
 

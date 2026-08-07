@@ -15,4 +15,4 @@ Containers `gold-api` and `gold-admin` appear automatically.
 
 ## Host health
 
-`make health` / `bash scripts/health.sh` includes both services and `/opt/docker/gold-api/auth_info`.
+`make health` / `bash scripts/health.sh` includes both services and `/opt/docker/applications/gold-api/auth_info`.

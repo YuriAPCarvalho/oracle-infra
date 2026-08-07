@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Example post-backup hook — copy to post-backup-oci-upload.sh and chmod +x to enable.
+# Upload to OCI Object Storage is INTENTIONALLY NOT implemented yet.
+#
+# When implementing:
+#   - Prefer uploading .meta.json + logical dumps (postgres/*.sql.gz) first
+#   - Respect Always Free 20 GiB Object Storage limit
+#   - Never upload if it would exceed quota
+#
+# Env provided by backup.sh:
+#   BACKUP_ARCHIVE  path to .tar.gz
+#   BACKUP_META     path to .meta.json
+
+set -Eeuo pipefail
+
+echo "post-backup hook stub: Object Storage upload not implemented"
+echo "ARCHIVE=${BACKUP_ARCHIVE:-}"
+echo "META=${BACKUP_META:-}"
+exit 0

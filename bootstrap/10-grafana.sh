@@ -6,7 +6,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="${PROJECT_ROOT}/compose/grafana/compose.yml"
 ENV_FILE="${PROJECT_ROOT}/compose/grafana/.env"
 ENV_EXAMPLE="${PROJECT_ROOT}/compose/grafana/.env.example"
-DATA_DIR="/opt/docker/grafana/data"
+DATA_DIR="/opt/docker/monitoring/grafana/data"
 
 log() {
   printf '\n==> %s\n' "$1"

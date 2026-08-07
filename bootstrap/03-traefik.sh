@@ -5,7 +5,7 @@ set -Eeuo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="${PROJECT_ROOT}/compose/traefik/compose.yml"
 CONFIG_FILE="${PROJECT_ROOT}/compose/traefik/traefik.yml"
-DATA_ROOT="/opt/docker/traefik"
+DATA_ROOT="/opt/docker/platform/traefik"
 LETSENCRYPT_DIR="${DATA_ROOT}/letsencrypt"
 LOGS_DIR="${DATA_ROOT}/logs"
 

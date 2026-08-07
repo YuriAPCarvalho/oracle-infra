@@ -170,17 +170,17 @@ check_persistent_dirs() {
   local missing=0
   local dir
   local dirs=(
-    /opt/docker/traefik/letsencrypt
-    /opt/docker/traefik/logs
-    /opt/docker/portainer/data
-    /opt/docker/uptime-kuma/data
-    /opt/docker/postgres/data
-    /opt/docker/minio/data
-    /opt/docker/gold-api/auth_info
-    /opt/docker/redis/data
-    /opt/docker/waha/sessions
-    /opt/docker/prometheus/data
-    /opt/docker/grafana/data
+    /opt/docker/platform/traefik/letsencrypt
+    /opt/docker/platform/traefik/logs
+    /opt/docker/platform/portainer/data
+    /opt/docker/platform/uptime-kuma/data
+    /opt/docker/databases/postgres/data
+    /opt/docker/databases/redis/data
+    /opt/docker/object-storage/minio/data
+    /opt/docker/applications/gold-api/auth_info
+    /opt/docker/applications/waha/sessions
+    /opt/docker/monitoring/prometheus/data
+    /opt/docker/monitoring/grafana/data
   )
 
   for dir in "${dirs[@]}"; do

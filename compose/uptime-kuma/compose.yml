@@ -11,7 +11,7 @@ services:
       - "127.0.0.1:8082:3001"
 
     volumes:
-      - /opt/docker/uptime-kuma/data:/app/data
+      - /opt/docker/platform/uptime-kuma/data:/app/data
 
     networks:
       - proxy

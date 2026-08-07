@@ -1,0 +1,71 @@
+groups:
+  - name: storage-alerts
+    rules:
+      - alert: BackupStale
+        expr: |
+          (
+            time() - infra_backup_last_success_timestamp_seconds
+          ) > 36 * 3600
+          and infra_backup_last_success_timestamp_seconds > 0
+        for: 15m
+        labels:
+          severity: warning
+          layer: backup
+        annotations:
+          summary: "Layer-1 backup not successful for >36h"
+          description: "Last successful backup marker is {{ $value | humanizeDuration }} old. Check cron and scripts/backup.sh."
+
+      - alert: BackupNeverSucceeded
+        expr: infra_backup_last_success_timestamp_seconds == 0 or absent(infra_backup_last_success_timestamp_seconds)
+        for: 2h
+        labels:
+          severity: warning
+          layer: backup
+        annotations:
+          summary: "No Layer-1 backup success marker"
+          description: "infra_backup_last_success_timestamp_seconds is missing or zero. Run make backup and scripts/metrics/storage-textfile.sh."
+
+      - alert: BackupsGrowthAbnormal
+        expr: |
+          (
+            increase(infra_storage_dir_bytes{path="backups/full"}[2d])
+            /
+            clamp_min(infra_storage_dir_bytes{path="backups/full"} offset 2d, 1)
+          ) > 2
+        for: 1h
+        labels:
+          severity: warning
+          layer: backup
+        annotations:
+          summary: "Backup directory grew >2x in 2 days"
+          description: "backups/full size growth ratio is {{ $value | printf \"%.2f\" }}. Check retention settings."
+
+      - alert: MinioDataGrowthAbnormal
+        expr: |
+          (
+            increase(infra_storage_dir_bytes{path="object-storage/minio"}[7d])
+            /
+            clamp_min(infra_storage_dir_bytes{path="object-storage/minio"} offset 7d, 1)
+          ) > 1.5
+        for: 6h
+        labels:
+          severity: warning
+          layer: storage
+        annotations:
+          summary: "MinIO data grew >50% in 7 days"
+          description: "object-storage/minio growth ratio {{ $value | printf \"%.2f\" }}."
+
+      - alert: PostgresDataGrowthAbnormal
+        expr: |
+          (
+            increase(infra_storage_dir_bytes{path="databases/postgres"}[7d])
+            /
+            clamp_min(infra_storage_dir_bytes{path="databases/postgres"} offset 7d, 1)
+          ) > 1.5
+        for: 6h
+        labels:
+          severity: warning
+          layer: storage
+        annotations:
+          summary: "Postgres data dir grew >50% in 7 days"
+          description: "databases/postgres growth ratio {{ $value | printf \"%.2f\" }}."

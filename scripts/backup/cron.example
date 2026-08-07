@@ -1,0 +1,11 @@
+# Example crontab entries for Layer-1 backup + storage textfile metrics.
+# Install manually on the VPS (do not auto-install from CI).
+#
+# Daily backup at 03:15 America/Sao_Paulo (adjust TZ / path):
+# 15 3 * * * cd /opt/infra && /usr/bin/env bash scripts/backup.sh >>/opt/docker/logs/backup-cron.log 2>&1
+#
+# Storage size metrics every 5 minutes (node_exporter textfile):
+# */5 * * * * cd /opt/infra && /usr/bin/env bash scripts/metrics/storage-textfile.sh
+#
+# Optional weekly reminder: create OCI Volume Backup of the Block Volume via Console
+# (max 5 Always Free volume backups across boot+block).

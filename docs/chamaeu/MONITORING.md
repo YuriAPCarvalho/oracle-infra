@@ -142,8 +142,8 @@ Túnel SSH → painel Dozzle — filtrar `rankao-api`, `waha`, `redis`.
 Incluir no ciclo `make backup`:
 
 - Postgres DB `rankao` (dump lógico via script dedicado — ver rankao-api migration scripts)
-- `/opt/docker/waha/sessions`
-- `/opt/docker/redis/data` (opcional — fila efêmera)
+- `/opt/docker/applications/waha/sessions`
+- `/opt/docker/databases/redis/data` (opcional — fila efêmera)
 
 ## Cron host (opcional)
 

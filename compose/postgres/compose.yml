@@ -18,7 +18,7 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
 
     volumes:
-      - /opt/docker/postgres/data:/var/lib/postgresql/data
+      - /opt/docker/databases/postgres/data:/var/lib/postgresql/data
 
     # Localhost only — access via SSH tunnel (never publish 0.0.0.0).
     # Needs a non-internal network: Docker blocks host binds on internal-only nets.

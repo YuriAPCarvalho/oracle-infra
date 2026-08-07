@@ -5,9 +5,9 @@ Este projeto versiona a infraestrutura Docker Compose da VPS Oracle Cloud ARM64.
 ## Estrutura da VPS
 
 - Codigo: `/opt/infra`
-- Dados persistentes: `/opt/docker`
+- Dados persistentes: `/opt/docker` (hierarquia canônica; alvo Block Volume — [STORAGE_ARCHITECTURE.md](STORAGE_ARCHITECTURE.md))
 - Servicos Docker Compose: `compose/<servico>/compose.yml`
-- Backups locais: `/opt/infra/backups`
+- Backups locais: `/opt/docker/backups/full/` (fallback: `/opt/infra/backups`)
 
 ## Pre-requisitos
 

@@ -27,7 +27,7 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
-      - /opt/docker/grafana/data:/var/lib/grafana
+      - /opt/docker/monitoring/grafana/data:/var/lib/grafana
       - ./provisioning:/etc/grafana/provisioning:ro
     networks:
       - monitoring

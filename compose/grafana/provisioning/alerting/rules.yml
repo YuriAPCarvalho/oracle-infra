@@ -306,3 +306,125 @@ groups:
         labels:
           severity: warning
           layer: host
+
+  - orgId: 1
+    name: storage-resources
+    folder: Oracle Infra Alerts
+    interval: 1m
+    rules:
+      - uid: gf_data_vol_disk_warn
+        title: Block volume (/opt/docker) usage warning
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |
+                (
+                  100 - (
+                    (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/opt/docker"} * 100)
+                    / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/opt/docker"}
+                  )
+                )
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: __expr__
+            model:
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [80]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: Block volume usage above 80%
+          description: /opt/docker filesystem usage crossed 80% for 10 minutes.
+        labels:
+          severity: warning
+          layer: storage
+
+      - uid: gf_backup_stale
+        title: Layer-1 backup stale
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |
+                (time() - infra_backup_last_success_timestamp_seconds) / 3600
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: __expr__
+            model:
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [36]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        annotations:
+          summary: Backup not successful for over 36 hours
+          description: Check make backup / cron. Requires storage-textfile metrics.
+        labels:
+          severity: warning
+          layer: backup

@@ -133,7 +133,7 @@ Bots sem HTTP e sem egress ficam apenas na rede `internal`. Workers que precisam
 
 ## Postgres compartilhado
 
-Uma instancia em `compose/postgres/` (rede `internal`, dados em `/opt/docker/postgres/data`, sem portas publicadas).
+Uma instancia em `compose/postgres/` (rede `internal`, dados em `/opt/docker/databases/postgres/data`, porta só em `127.0.0.1:5432`).
 
 Criar database/role por aplicacao:
 

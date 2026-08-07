@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="${PROJECT_ROOT}/compose/prometheus/compose.yml"
-DATA_DIR="/opt/docker/prometheus/data"
+DATA_DIR="/opt/docker/monitoring/prometheus/data"
 
 log() {
   printf '\n==> %s\n' "$1"

@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="${PROJECT_ROOT}/compose/portainer/compose.yml"
-DATA_DIR="/opt/docker/portainer/data"
+DATA_DIR="/opt/docker/platform/portainer/data"
 
 log() {
   printf '\n==> %s\n' "$1"

@@ -20,7 +20,7 @@ services:
       MINIO_PROMETHEUS_AUTH_TYPE: public
 
     volumes:
-      - /opt/docker/minio/data:/data
+      - /opt/docker/object-storage/minio/data:/data
 
     ports:
       - "127.0.0.1:9001:9001"

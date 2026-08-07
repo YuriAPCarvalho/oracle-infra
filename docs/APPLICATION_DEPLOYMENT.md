@@ -26,7 +26,7 @@ Callers devem pinar `YuriAPCarvalho/oracle-infra` com tag versionada (`@v1`), na
 - A VPS nao e ambiente de desenvolvimento.
 - Arquivos nao devem ser editados manualmente em `/opt/infra`.
 - Alteracoes entram por Git.
-- Dados persistentes ficam em `/opt/docker/<service>`.
+- Dados persistentes ficam sob `/opt/docker/` (ver [STORAGE_ARCHITECTURE.md](STORAGE_ARCHITECTURE.md); apps em `applications/<service>`).
 - Segredos nao entram no Git.
 - `.env` permanece apenas na VPS ou em gerenciador de segredos.
 - Cada servico tera seu proprio Compose.

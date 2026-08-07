@@ -17,7 +17,7 @@ services:
       WHATSAPP_AUTH_PATH: /data/auth_info
 
     volumes:
-      - /opt/docker/gold-api/auth_info:/data/auth_info
+      - /opt/docker/applications/gold-api/auth_info:/data/auth_info
 
     networks:
       - gold-api-net

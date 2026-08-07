@@ -18,7 +18,7 @@ services:
 
     # Optional persistence. Enable only when the application needs local durable state.
     # volumes:
-    #   - /opt/docker/${SERVICE_NAME}/data:/app/data
+    #   - /opt/docker/applications/${SERVICE_NAME}/data:/app/data
 
     # Optional healthcheck. Replace with a command supported by the application image.
     # healthcheck:

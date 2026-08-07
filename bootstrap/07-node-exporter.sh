@@ -27,6 +27,9 @@ ARCH="$(uname -m)"
 [[ "${ARCH}" == "aarch64" || "${ARCH}" == "arm64" ]] ||
   fail "Arquitetura não suportada para esta stack: ${ARCH} (esperado aarch64/arm64)."
 
+log "Criando diretório textfile (storage metrics)"
+sudo install -d -m 0755 -o ubuntu -g ubuntu /opt/docker/monitoring/node-exporter/textfile
+
 log "Verificando a rede monitoring"
 if ! docker network inspect monitoring >/dev/null 2>&1; then
   docker network create monitoring

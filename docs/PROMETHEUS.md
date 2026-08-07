@@ -9,7 +9,7 @@ Scrape e retenção de métricas na rede `monitoring`.
 - Imagem: `prom/prometheus:v3.2.1`
 - Sem porta publicada no host
 - Config versionada: `prometheus.yml` + `rules/*.yml`
-- Dados: `/opt/docker/prometheus/data` (owner `65534:65534`)
+- Dados: `/opt/docker/monitoring/prometheus/data` (owner `65534:65534`)
 
 ## Scrape jobs
 
@@ -35,7 +35,7 @@ Quando qualquer limite é atingido, Prometheus remove blocos antigos. A TSDB **n
 Com ~15s de scrape em host + dezenas de séries de containers, 5 GB / 15 dias é conservador nesta VPS (~41 GB livres observados em 2026-08).
 
 ```bash
-du -sh /opt/docker/prometheus/data
+du -sh /opt/docker/monitoring/prometheus/data
 docker run --rm --network monitoring curlimages/curl:8.12.1 \
   -fsS 'http://prometheus:9090/api/v1/status/tsdb'
 ```

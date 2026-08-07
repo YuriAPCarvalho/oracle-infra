@@ -15,8 +15,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
-      - /opt/docker/traefik/letsencrypt:/letsencrypt
-      - /opt/docker/traefik/logs:/var/log/traefik
+      - /opt/docker/platform/traefik/letsencrypt:/letsencrypt
+      - /opt/docker/platform/traefik/logs:/var/log/traefik
 
     networks:
       - proxy

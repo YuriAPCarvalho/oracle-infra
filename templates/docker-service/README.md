@@ -14,7 +14,7 @@ Template generico para futuras aplicacoes Docker Compose.
 - Nenhuma porta publica por padrao.
 - Rede `internal` ativa por padrao.
 - Rede `proxy` e labels Traefik somente quando houver endpoint HTTP real.
-- Persistencia opcional em `/opt/docker/<service>`.
+- Persistencia opcional em `/opt/docker/applications/<service>/`.
 - Rotacao de logs gerenciada globalmente pelo Docker.
 - Sem Docker socket, container privilegiado ou permissoes amplas.
 

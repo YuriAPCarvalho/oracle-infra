@@ -64,10 +64,26 @@ Ou `bash bootstrap/bootstrap.sh` (painéis 03–06 + métricas 07–12).
 
 | Path | Conteúdo |
 |------|----------|
-| `/opt/docker/prometheus/data` | TSDB (UID 65534) |
-| `/opt/docker/grafana/data` | DB/config Grafana (UID 472) |
+| `/opt/docker/monitoring/prometheus/data` | TSDB (UID 65534) |
+| `/opt/docker/monitoring/grafana/data` | DB/config Grafana (UID 472) |
+| `/opt/docker/monitoring/node-exporter/textfile` | Métricas textfile (tamanhos de dirs / backup) |
 
-Node Exporter e cAdvisor não precisam de dados persistentes.
+Layout completo: [STORAGE_ARCHITECTURE.md](STORAGE_ARCHITECTURE.md).
+
+Node Exporter e cAdvisor não precisam de TSDB; textfile é gerado no host.
+
+## Storage metrics (necessário para crescimento)
+
+```bash
+# Na VPS, a cada 5 min (ver scripts/backup/cron.example)
+bash scripts/metrics/storage-textfile.sh
+```
+
+Métricas: `infra_storage_dir_bytes`, `infra_backup_last_success_timestamp_seconds`.
+
+### Object Storage OCI (Camada 3)
+
+Sem exporter na VPS nesta fase. Monitorar uso/crescimento via Console OCI (bucket metrics) ou CLI `oci` — ver [OCI_STORAGE.md](OCI_STORAGE.md). Limite Always Free: **20 GiB**.
 
 ## Node Exporter collectors
 
@@ -86,13 +102,16 @@ Pasta **Oracle Infra**:
 | Dashboard | Conteúdo |
 |-----------|----------|
 | Host metrics | CPU, load, memória, disco, rede, PSI, FD/sockets, disk util/await |
+| Storage volumes | Boot `/`, Block `/opt/docker`, crescimento DBs/MinIO/backups |
 | Container metrics | CPU/RAM/rede/disco por container, restarts, PSI, idade |
 | Data layer | Postgres (conexões, tamanho, locks, txs) + Redis (mem, hit ratio, keys) |
 | Edge (Traefik) | req/s, 4xx/5xx, latência p50/p95, bytes |
 | MinIO | scrape up, capacidade, objetos, tráfego S3, bucket usage |
 
-Alertas Discord: disco/memória/iowait/conntrack/scrape — ver [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md).
+Alertas Discord: disco boot/block, backup stale, memória/iowait/conntrack/scrape — ver [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md).
 
+- [STORAGE_ARCHITECTURE.md](STORAGE_ARCHITECTURE.md)
+- [OCI_STORAGE.md](OCI_STORAGE.md)
 - [PROMETHEUS.md](PROMETHEUS.md)
 - [GRAFANA.md](GRAFANA.md)
 - [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md)

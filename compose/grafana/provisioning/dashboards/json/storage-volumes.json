@@ -1,0 +1,224 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 80 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        {
+          "expr": "100 - ((node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/\"} * 100) / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/\"})",
+          "legendFormat": "boot /",
+          "refId": "A"
+        }
+      ],
+      "title": "Boot Volume usage %",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 80 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        {
+          "expr": "100 - ((node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/opt/docker\"} * 100) / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/opt/docker\"})",
+          "legendFormat": "/opt/docker",
+          "refId": "A"
+        }
+      ],
+      "title": "Block Volume usage %",
+      "description": "No data until /opt/docker is a separate mount (or bind). Same as boot if still single disk.",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "min": 0 },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/\"}",
+          "legendFormat": "boot free",
+          "refId": "A"
+        }
+      ],
+      "title": "Boot free bytes",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "min": 0 },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/opt/docker\"}",
+          "legendFormat": "data free",
+          "refId": "A"
+        }
+      ],
+      "title": "Block free bytes",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": true }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "infra_storage_dir_bytes{path=~\"databases/postgres|databases/redis\"}",
+          "legendFormat": "{{path}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Database directory growth",
+      "description": "Requires scripts/metrics/storage-textfile.sh on cron.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": true }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "infra_storage_dir_bytes{path=\"object-storage/minio\"}",
+          "legendFormat": "minio data",
+          "refId": "A"
+        },
+        {
+          "expr": "minio_cluster_capacity_usable_free_bytes",
+          "legendFormat": "minio usable free",
+          "refId": "B"
+        }
+      ],
+      "title": "MinIO / buckets growth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": true }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "infra_storage_dir_bytes{path=~\"backups|backups/full|backups/postgres\"}",
+          "legendFormat": "{{path}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Backups growth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeAsIso",
+          "custom": { "fillOpacity": 0, "lineWidth": 2 }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "id": 8,
+      "targets": [
+        {
+          "expr": "infra_backup_last_success_timestamp_seconds * 1000",
+          "legendFormat": "last success",
+          "refId": "A"
+        }
+      ],
+      "title": "Last Layer-1 backup success",
+      "description": "From .last-success marker via textfile collector.",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["oracle-infra", "storage"],
+  "templating": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Storage volumes",
+  "uid": "storage-volumes",
+  "version": 1
+}

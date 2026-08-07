@@ -28,7 +28,7 @@ Infraestrutura versionada da VPS Oracle Cloud ARM64, baseada em Docker Compose.
 - `backups/`: backups locais
 - `logs/`: logs operacionais
 
-Na VPS, o codigo fica em `/opt/infra` e os dados persistentes ficam em `/opt/docker`.
+Na VPS, o codigo fica em `/opt/infra` e os dados persistentes ficam em `/opt/docker` (alvo: Block Volume). Ver [STORAGE_ARCHITECTURE.md](docs/STORAGE_ARCHITECTURE.md).
 
 ## Comandos operacionais
 
@@ -107,8 +107,21 @@ Base **experimental** disponivel:
 
 - **ScriptGold** (`gold-api` + `gold-admin`) — migracao Railway → Oracle.
 
+### Fase 6 - Armazenamento profissional
+
+Preparada no repositorio (aplicar na VPS via runbook):
+
+- hierarquia `/opt/docker` (databases, object-storage, monitoring, platform, apps, backups);
+- docs Always Free / Block Volume / Object Storage;
+- backup em 3 camadas (local + Volume Backup OCI + hook Object Storage);
+- monitoramento Boot/Block + textfile + alertas Discord.
+
+Ver [STORAGE_ARCHITECTURE.md](docs/STORAGE_ARCHITECTURE.md), [OCI_STORAGE.md](docs/OCI_STORAGE.md), [runbooks/MIGRATE_TO_BLOCK_VOLUME.md](docs/runbooks/MIGRATE_TO_BLOCK_VOLUME.md).
+
 ## Documentacao
 
+- [Storage Architecture](docs/STORAGE_ARCHITECTURE.md)
+- [OCI Storage (Always Free)](docs/OCI_STORAGE.md)
 - [Deploy](docs/DEPLOY.md)
 - [Backup](docs/BACKUP.md)
 - [Restore](docs/RESTORE.md)

@@ -13,7 +13,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./rules:/etc/prometheus/rules:ro
-      - /opt/docker/prometheus/data:/prometheus
+      - /opt/docker/monitoring/prometheus/data:/prometheus
     networks:
       - monitoring
     security_opt:

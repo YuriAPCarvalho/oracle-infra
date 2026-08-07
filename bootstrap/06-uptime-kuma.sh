@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="${PROJECT_ROOT}/compose/uptime-kuma/compose.yml"
-DATA_DIR="/opt/docker/uptime-kuma/data"
+DATA_DIR="/opt/docker/platform/uptime-kuma/data"
 
 log() {
   printf '\n==> %s\n' "$1"

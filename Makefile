@@ -32,7 +32,7 @@ update:
 	bash scripts/update.sh
 
 shellcheck:
-	shellcheck -x -P scripts bootstrap/*.sh scripts/*.sh scripts/lib/*.sh
+	shellcheck -x -P scripts bootstrap/*.sh scripts/*.sh scripts/lib/*.sh scripts/metrics/*.sh
 
 validate-compose:
 	@set -Eeuo pipefail; \
@@ -80,7 +80,7 @@ validate-prometheus:
 	docker run --rm --entrypoint promtool \
 		-v "$(CURDIR)/compose/prometheus:/etc/prometheus:ro" \
 		"$(PROMETHEUS_IMAGE)" \
-		check rules /etc/prometheus/rules/host-alerts.yml /etc/prometheus/rules/container-alerts.yml
+		check rules /etc/prometheus/rules/host-alerts.yml /etc/prometheus/rules/container-alerts.yml /etc/prometheus/rules/storage-alerts.yml
 
 validate-grafana-dashboards:
 	@set -Eeuo pipefail; \

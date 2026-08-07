@@ -18,7 +18,8 @@ Use este checklist antes de adicionar qualquer novo servico ao inventario operac
 - [ ] Compose criado a partir do template.
 - [ ] `.env.example` criado sem segredos reais.
 - [ ] `.env` real criado somente na VPS ou no gerenciador de segredos.
-- [ ] Persistencia definida em `/opt/docker/<service>`, se necessaria.
+- [ ] Persistencia definida sob `/opt/docker/` na hierarquia correta (`applications/<service>`, `databases/`, etc.).
+- [ ] `bash scripts/storage-prepare-dirs.sh` documentado no onboarding.
 - [ ] Rede definida (`internal` sem egress, ou bridge propria com outbound quando necessario — ver Discovery do servico).
 - [ ] Porta definida somente se necessaria.
 - [ ] Traefik habilitado somente com endpoint HTTP real.
@@ -51,7 +52,7 @@ Use este checklist antes de adicionar qualquer novo servico ao inventario operac
 - [ ] `restart.sh`: validar restart por Compose.
 - [ ] `shell.sh`: validar shell disponivel no container.
 - [ ] `update.sh`: confirmar pull e `up -d`.
-- [ ] `backup.sh`: confirmar inclusao de `/opt/docker/<service>`.
+- [ ] `backup.sh`: confirmar inclusao sob `/opt/docker` (hierarquia canônica).
 - [ ] `restore.sh`: testar dry-run com backup recente.
 - [ ] Makefile: adicionar targets especificos somente se agregarem valor.
 - [ ] GitHub Actions (oracle-infra): validar Compose e checks do servico.

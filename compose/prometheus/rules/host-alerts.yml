@@ -14,8 +14,8 @@ groups:
           severity: warning
           layer: host
         annotations:
-          summary: "Disk usage above 80% on {{ $labels.instance }}"
-          description: "Root filesystem usage is {{ $value | printf \"%.1f\" }}% for more than 10 minutes."
+          summary: "Boot disk usage above 80% on {{ $labels.instance }}"
+          description: "Root filesystem (/) usage is {{ $value | printf \"%.1f\" }}% for more than 10 minutes."
 
       - alert: HostDiskUsageCritical
         expr: |
@@ -30,8 +30,51 @@ groups:
           severity: critical
           layer: host
         annotations:
-          summary: "Disk usage above 90% on {{ $labels.instance }}"
-          description: "Root filesystem usage is {{ $value | printf \"%.1f\" }}% for more than 5 minutes."
+          summary: "Boot disk usage above 90% on {{ $labels.instance }}"
+          description: "Root filesystem (/) usage is {{ $value | printf \"%.1f\" }}% for more than 5 minutes."
+
+      - alert: DataVolumeDiskUsageWarning
+        expr: |
+          (
+            100 - (
+              (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/opt/docker"} * 100)
+              / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/opt/docker"}
+            )
+          ) > 80
+        for: 10m
+        labels:
+          severity: warning
+          layer: storage
+        annotations:
+          summary: "Block volume (/opt/docker) usage above 80%"
+          description: "/opt/docker usage is {{ $value | printf \"%.1f\" }}% for more than 10 minutes."
+
+      - alert: DataVolumeDiskUsageCritical
+        expr: |
+          (
+            100 - (
+              (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/opt/docker"} * 100)
+              / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint="/opt/docker"}
+            )
+          ) > 90
+        for: 5m
+        labels:
+          severity: critical
+          layer: storage
+        annotations:
+          summary: "Block volume (/opt/docker) usage above 90%"
+          description: "/opt/docker usage is {{ $value | printf \"%.1f\" }}% for more than 5 minutes."
+
+      - alert: HostFilesystemAvailLow
+        expr: |
+          node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint=~"/|/opt/docker"} < 2 * 1024 * 1024 * 1024
+        for: 10m
+        labels:
+          severity: critical
+          layer: storage
+        annotations:
+          summary: "Less than 2GiB free on {{ $labels.mountpoint }}"
+          description: "Available space on {{ $labels.mountpoint }} is {{ $value | humanize1024 }}B."
 
       - alert: HostMemoryAvailableWarning
         expr: |

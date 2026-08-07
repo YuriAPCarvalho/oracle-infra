@@ -5,8 +5,8 @@
 # silently: existing targets are listed and the user must type RESTORE.
 #
 # Usage:
-#   ./scripts/restore.sh backups/backup-YYYYMMDD-HHMMSS.tar.gz
-#   ./scripts/restore.sh --dry-run backups/backup-YYYYMMDD-HHMMSS.tar.gz
+#   ./scripts/restore.sh backups/full/backup-YYYYMMDD-HHMMSS.tar.gz
+#   ./scripts/restore.sh --dry-run /opt/docker/backups/full/backup-....tar.gz
 
 set -Eeuo pipefail
 
@@ -91,10 +91,18 @@ validate_checksum() {
   ok "SHA-256 checksum valid"
 }
 
+# Archive stores DATA_ROOT without leading slash (e.g. opt/docker/...).
+archive_data_prefix() {
+  local data_root="$1"
+  printf '%s\n' "${data_root#/}"
+}
+
 main() {
   local temp_dir
   local answer
   local data_root
+  local data_prefix
+  local archive_data_src=""
   local project_dir
   local project_dirs=(
     compose
@@ -112,6 +120,7 @@ main() {
   require_command tar
   require_command sha256sum
   data_root="$(persistent_data_root)"
+  data_prefix="$(archive_data_prefix "${data_root}")"
 
   info "Validating checksum"
   validate_checksum "${BACKUP_FILE}"
@@ -121,7 +130,8 @@ main() {
   ok "Archive is readable"
 
   section "Archive contents"
-  tar -tzf "${BACKUP_FILE}"
+  tar -tzf "${BACKUP_FILE}" | head -n 80 || true
+  info "(listing truncated to 80 lines)"
 
   for project_dir in compose bootstrap scripts docs; do
     tar_contains "${BACKUP_FILE}" "${project_dir}" ||
@@ -144,14 +154,22 @@ main() {
     fi
   done
 
-  if [[ -e "${temp_dir}/opt/docker" ]]; then
+  if [[ -e "${temp_dir}/${data_prefix}" ]]; then
+    archive_data_src="${temp_dir}/${data_prefix}"
+  elif [[ -e "${temp_dir}/opt/docker" ]]; then
+    # Legacy archives always used opt/docker regardless of DATA_ROOT override
+    archive_data_src="${temp_dir}/opt/docker"
+    warn "Archive uses legacy path opt/docker; will restore into DATA_ROOT=${data_root}"
+  fi
+
+  if [[ -n "${archive_data_src}" ]]; then
     if [[ -e "${data_root}" ]]; then
       warn "Existing persistent data will be overwritten after confirmation: ${data_root}"
     else
       info "Will create ${data_root}"
     fi
   else
-    warn "Archive does not contain opt/docker"
+    warn "Archive does not contain persistent data tree (${data_prefix})"
   fi
 
   if [[ "${DRY_RUN}" == "true" ]]; then
@@ -177,15 +195,16 @@ main() {
     fi
   done
 
-  if [[ -e "${temp_dir}/opt/docker" ]]; then
-    section "Restoring persistent data"
-    sudo_cmd mkdir -p /opt
+  if [[ -n "${archive_data_src}" ]]; then
+    section "Restoring persistent data to ${data_root}"
+    sudo_cmd mkdir -p "$(dirname "${data_root}")"
     sudo_cmd rm -rf "${data_root}"
-    sudo_cmd cp -a "${temp_dir}/opt/docker" /opt/docker
+    sudo_cmd cp -a "${archive_data_src}" "${data_root}"
     ok "Restored ${data_root}"
   fi
 
   ok "Restore completed."
+  info "Next: bash scripts/storage-prepare-dirs.sh && make health"
 }
 
 main "$@"
