@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # Restrict HTTP/HTTPS origin access to Cloudflare edge IPs.
 #
 # Important: Traefik publishes 80/443 via Docker. Docker iptables bypasses UFW
