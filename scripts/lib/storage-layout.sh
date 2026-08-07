@@ -71,12 +71,20 @@ ensure_storage_dirs() {
 
 apply_storage_special_ownership() {
   local root="${1:-${DATA_ROOT}}"
+  # postgres:18-alpine -> UID 70; redis:7-alpine -> UID 999
+  # prometheus -> 65534; grafana -> 472
 
   if [[ "${EUID}" -eq 0 ]]; then
+    chown -R 70:70 "${root}/databases/postgres/data"
+    chmod 0700 "${root}/databases/postgres/data"
+    chown -R 999:999 "${root}/databases/redis/data" 2>/dev/null || true
     chown -R 65534:65534 "${root}/monitoring/prometheus/data"
     chown -R 472:472 "${root}/monitoring/grafana/data"
     chmod 0750 "${root}/monitoring/prometheus/data" "${root}/monitoring/grafana/data"
   else
+    sudo chown -R 70:70 "${root}/databases/postgres/data"
+    sudo chmod 0700 "${root}/databases/postgres/data"
+    sudo chown -R 999:999 "${root}/databases/redis/data" 2>/dev/null || true
     sudo chown -R 65534:65534 "${root}/monitoring/prometheus/data"
     sudo chown -R 472:472 "${root}/monitoring/grafana/data"
     sudo chmod 0750 "${root}/monitoring/prometheus/data" "${root}/monitoring/grafana/data"
