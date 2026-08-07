@@ -29,7 +29,7 @@ Prometheus --> cadvisor:8080
 Prometheus --> traefik:8082
 Prometheus --> postgres-exporter:9187
 Prometheus --> redis-exporter:9121
-Prometheus --> minio:9000 (/minio/v2/metrics/cluster)
+Prometheus --> minio:9000 (/minio/v2/metrics/cluster + /bucket)
 ```
 
 ## Bootstrap

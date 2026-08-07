@@ -62,7 +62,8 @@
       "targets": [
         { "expr": "minio_cluster_nodes_online_total", "legendFormat": "nodes online", "refId": "A" },
         { "expr": "minio_cluster_drive_online_total", "legendFormat": "drives online", "refId": "B" },
-        { "expr": "minio_bucket_usage_object_total", "legendFormat": "objects {{bucket}}", "refId": "C" }
+        { "expr": "minio_bucket_usage_object_total", "legendFormat": "objects {{bucket}}", "refId": "C" },
+        { "expr": "minio_cluster_usage_object_total", "legendFormat": "objects (cluster)", "refId": "D" }
       ],
       "title": "Nodes / drives / objects",
       "type": "timeseries"

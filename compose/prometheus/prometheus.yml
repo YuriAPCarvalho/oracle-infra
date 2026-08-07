@@ -60,3 +60,11 @@ scrape_configs:
           - minio:9000
         labels:
           service: minio
+
+  - job_name: minio-bucket
+    metrics_path: /minio/v2/metrics/bucket
+    static_configs:
+      - targets:
+          - minio:9000
+        labels:
+          service: minio
