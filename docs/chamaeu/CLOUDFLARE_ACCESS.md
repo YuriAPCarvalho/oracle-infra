@@ -116,13 +116,15 @@ node scripts/configure-chamaeu-cloudflare-waf.mjs
 
 **Nota:** webhooks de pagamento costumam vir de fora do BR — por isso não são bloqueados. Se Mercado Pago falhar, confirme o path do webhook na regra.
 
-## 5. Origin lock (UFW) — só Cloudflare em 80/443
+## 5. Origin lock — só Cloudflare em 80/443
 
 Na VPS, HTTP/HTTPS ficam restritos aos [CIDRs oficiais Cloudflare](https://www.cloudflare.com/ips/). SSH (22) permanece `LIMIT`.
+
+> Docker publica 80/443 do Traefik e **bypassa o UFW**. O script também aplica a chain `DOCKER-USER` (iptables) e um unit systemd para reaplicar após reboot.
 
 ```bash
 cd /opt/infra
 sudo bash scripts/ufw-cloudflare-only-http.sh
 ```
 
-Tráfego direto ao IP público da VPS nas portas 80/443 deve ser recusado; sites/painéis continuam via proxy Cloudflare.
+Tráfego direto ao IP público da VPS nas portas 80/443 deve falhar; sites/painéis continuam via proxy Cloudflare.
