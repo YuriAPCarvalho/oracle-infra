@@ -80,8 +80,8 @@ docker compose -f "${COMPOSE_FILE}" ps
 
 echo
 echo "Grafana instalado."
-echo "Acesso local: http://127.0.0.1:3000"
-echo "Túnel SSH: ssh -L 3000:127.0.0.1:3000 ubuntu@<VPS_HOST>"
+echo "URL pública (Cloudflare Access): https://grafana.chamaeu.app"
+echo "Fallback local: http://127.0.0.1:3000 (túnel SSH)"
 if [[ -z "${GRAFANA_DISCORD_WEBHOOK_URL:-}" ]]; then
   echo "AVISO: GRAFANA_DISCORD_WEBHOOK_URL não definido — configure antes de testar alertas Discord."
 fi

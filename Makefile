@@ -50,6 +50,7 @@ validate-compose:
 	if [[ ! -f "$$gf_env" ]]; then \
 		cp compose/grafana/.env.example "$$gf_env"; \
 		printf '%s\n' \
+			'SERVICE_HOST=grafana.chamaeu.app' \
 			'GF_SECURITY_ADMIN_USER=admin' \
 			'GF_SECURITY_ADMIN_PASSWORD=placeholder-validate-only' \
 			>> "$$gf_env"; \

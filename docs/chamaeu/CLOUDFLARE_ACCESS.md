@@ -10,6 +10,7 @@ Padrão igual [MARCA7_TECH_DNS_ACCESS.md](../MARCA7_TECH_DNS_ACCESS.md): **DNS p
 | Dozzle | https://dozzle.chamaeu.app | Sim |
 | Portainer | https://portainer.chamaeu.app | Sim |
 | Traefik | https://traefik.chamaeu.app | Sim |
+| Grafana | https://grafana.chamaeu.app | Sim |
 
 **Sem Access** (público): `chamaeu.app`, `api.chamaeu.app`, `adm.chamaeu.app`.
 
@@ -36,6 +37,7 @@ node scripts/configure-chamaeu-cloudflare-access.mjs
 | Dozzle (ChamaEu) | `dozzle.chamaeu.app` |
 | Portainer (ChamaEu) | `portainer.chamaeu.app` |
 | Traefik (ChamaEu) | `traefik.chamaeu.app` |
+| Grafana (ChamaEu) | `grafana.chamaeu.app` |
 
 Cria/atualiza registros **A** proxied e applications Access com IdP **Cloudflare** + **One-time PIN** (quando o token tiver permissão).
 
@@ -57,20 +59,26 @@ SERVICE_HOST=portainer.chamaeu.app
 
 # compose/traefik/.env
 SERVICE_HOST=traefik.chamaeu.app
+
+# compose/grafana/.env (manter admin user/password; só acrescentar host)
+SERVICE_HOST=grafana.chamaeu.app
 ```
 
 Recriar stacks:
 
 ```bash
 cd /opt/infra
+bash scripts/apply-chamaeu-panel-hosts.sh
+# ou manualmente:
 docker compose -f compose/uptime-kuma/compose.yml up -d --force-recreate
 docker compose -f compose/dozzle/compose.yml up -d --force-recreate
 docker compose -f compose/portainer/compose.yml up -d --force-recreate
 docker compose -f compose/traefik/compose.yml up -d --force-recreate
+docker compose -f compose/grafana/compose.yml up -d --force-recreate
 docker restart traefik   # se labels do dashboard não atualizarem
 ```
 
-Uptime Kuma mantém bind `127.0.0.1:8082` como fallback SSH; tráfego público entra pela rede `proxy` + Traefik.
+Uptime Kuma e Grafana mantêm bind `127.0.0.1` como fallback SSH; tráfego público entra pela rede `proxy` + Traefik (+ Cloudflare Access).
 
 ## 3. Uptime Kuma — monitores ChamaEu
 
@@ -87,5 +95,5 @@ Discord: `compose/uptime-kuma/.env` + `bash scripts/uptime-kuma-seed-discord.sh`
 ## Smoke
 
 1. Abrir `https://portainer.chamaeu.app` → tela **Cloudflare Access** → login e-mail.
-2. Depois do login, UI Portainer / Kuma / Dozzle.
+2. Depois do login, UI Portainer / Kuma / Dozzle / Grafana (`https://grafana.chamaeu.app`).
 3. `https://api.chamaeu.app/health` → **sem** Access, 200 JSON.

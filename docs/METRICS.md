@@ -16,10 +16,10 @@ Métricas históricas da VPS e dos containers Docker. Complementa Uptime Kuma (d
 
 ## Arquitetura
 
-- Rede Docker externa: `monitoring`
-- Sem Traefik, sem DNS, sem HTTPS público
+- Rede Docker externa: `monitoring` (exporters ↔ Prometheus ↔ Grafana)
+- Grafana também na rede `proxy` (Traefik) → `https://grafana.chamaeu.app` + Cloudflare Access
 - Exporters e Prometheus: **sem** portas no host
-- Grafana: `127.0.0.1:3000` + túnel SSH
+- Grafana: `127.0.0.1:3000` (fallback SSH) + Traefik público protegido por Access
 
 ```text
 Windows --SSH -L 3000-- > VPS:3000 (Grafana)

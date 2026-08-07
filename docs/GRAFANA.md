@@ -1,10 +1,13 @@
 # Grafana
 
-Dashboards e UI de métricas. **Somente localhost + túnel SSH** — sem Traefik, sem domínio, sem HTTPS público.
+Dashboards e UI de métricas.
 
 ## Acesso
 
-Bind: `127.0.0.1:3000`
+| Modo | URL |
+|------|-----|
+| Cloudflare Access (recomendado) | `https://grafana.chamaeu.app` |
+| Fallback SSH | `127.0.0.1:3000` via túnel |
 
 ```powershell
 ssh -i "$HOME\.ssh\id_rsa" `
@@ -12,7 +15,7 @@ ssh -i "$HOME\.ssh\id_rsa" `
   ubuntu@<VPS_HOST>
 ```
 
-Abrir `http://127.0.0.1:3000` no Windows.
+Painel público: mesmo padrão dos outros painéis ChamaEu (DNS proxied → Traefik → origin + Zero Trust Access). Ver [chamaeu/CLOUDFLARE_ACCESS.md](chamaeu/CLOUDFLARE_ACCESS.md).
 
 ## Segurança
 
@@ -20,6 +23,7 @@ Configurado via `compose/grafana/.env` (não versionado):
 
 | Variável | Uso |
 |----------|-----|
+| `SERVICE_HOST` | Host Traefik (`grafana.chamaeu.app`) |
 | `GF_SECURITY_ADMIN_USER` | Admin |
 | `GF_SECURITY_ADMIN_PASSWORD` | Senha (fora do Git) |
 | `GRAFANA_DISCORD_WEBHOOK_URL` | Opcional — ver [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md) |
@@ -30,7 +34,9 @@ Também:
 - anônimo desabilitado
 - analytics/reporting desabilitados
 - plugins não assinados não liberados
+- cookie secure (HTTPS)
 - persistência em `/opt/docker/grafana/data` (UID `472`)
+- redes `monitoring` (Prometheus) + `proxy` (Traefik)
 
 Copiar de [`compose/grafana/.env.example`](../compose/grafana/.env.example).
 

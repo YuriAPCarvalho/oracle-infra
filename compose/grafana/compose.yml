@@ -9,7 +9,7 @@ services:
       TZ: America/Sao_Paulo
       GF_SERVER_HTTP_ADDR: 0.0.0.0
       GF_SERVER_HTTP_PORT: "3000"
-      GF_SERVER_ROOT_URL: http://127.0.0.1:3000
+      GF_SERVER_ROOT_URL: https://${SERVICE_HOST:-grafana.chamaeu.app}
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_USERS_ALLOW_ORG_CREATE: "false"
       GF_AUTH_ANONYMOUS_ENABLED: "false"
@@ -17,7 +17,7 @@ services:
       GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
       GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
       GF_SECURITY_DISABLE_GRAVATAR: "true"
-      GF_SECURITY_COOKIE_SECURE: "false"
+      GF_SECURITY_COOKIE_SECURE: "true"
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ""
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
       GF_UNIFIED_ALERTING_ENABLED: "true"
@@ -31,6 +31,7 @@ services:
       - ./provisioning:/etc/grafana/provisioning:ro
     networks:
       - monitoring
+      - proxy
     security_opt:
       - no-new-privileges:true
     healthcheck:
@@ -39,8 +40,24 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.middlewares.grafana-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.grafana-https.redirectscheme.permanent=true
+      - traefik.http.routers.grafana-http.rule=Host(`${SERVICE_HOST:-grafana.chamaeu.app}`)
+      - traefik.http.routers.grafana-http.entrypoints=web
+      - traefik.http.routers.grafana-http.middlewares=grafana-https
+      - traefik.http.routers.grafana.rule=Host(`${SERVICE_HOST:-grafana.chamaeu.app}`)
+      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.tls=true
+      - traefik.http.routers.grafana.tls.certresolver=letsencrypt
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
 
 networks:
   monitoring:
     external: true
     name: monitoring
+  proxy:
+    external: true
+    name: proxy

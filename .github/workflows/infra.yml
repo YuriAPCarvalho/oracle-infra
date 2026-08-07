@@ -46,6 +46,7 @@ jobs:
           if [[ ! -f "${gf_env}" ]]; then
             cp compose/grafana/.env.example "${gf_env}"
             {
+              echo 'SERVICE_HOST=grafana.chamaeu.app'
               echo 'GF_SECURITY_ADMIN_USER=admin'
               echo 'GF_SECURITY_ADMIN_PASSWORD=placeholder-validate-only'
             } >> "${gf_env}"
