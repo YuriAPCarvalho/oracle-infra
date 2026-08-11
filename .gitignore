@@ -27,3 +27,7 @@ acme.json
 .cursor/
 .locks/
 .wrangler/
+
+# Local copies of hook examples (secrets stay in compose/backup-r2/.env)
+scripts/backup/hooks/*.sh
+!scripts/backup/hooks/*.example
