@@ -385,7 +385,10 @@ groups:
             model:
               editorMode: code
               expr: |
-                (time() - infra_backup_last_success_timestamp_seconds) / 3600
+                (
+                  time() - infra_backup_last_success_timestamp_seconds
+                ) / 3600
+                and infra_backup_last_success_timestamp_seconds > 0
               instant: true
               refId: A
           - refId: B
@@ -425,6 +428,123 @@ groups:
         annotations:
           summary: Backup not successful for over 36 hours
           description: Check make backup / cron. Requires storage-textfile metrics.
+        labels:
+          severity: warning
+          layer: backup
+
+      - uid: gf_r2_backup_stale
+        title: Layer-3 R2 backup stale
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |
+                (
+                  time() - infra_r2_last_success_timestamp_seconds
+                ) / 3600
+                and infra_r2_last_success_timestamp_seconds > 0
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: __expr__
+            model:
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [36]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        annotations:
+          summary: R2 offsite backup not successful for over 36 hours
+          description: Check post-backup-r2 hook and compose/backup-r2/.env. Requires storage-textfile metrics.
+        labels:
+          severity: warning
+          layer: backup
+
+      - uid: gf_r2_near_soft_cap
+        title: R2 backup near soft cap
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 1800
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |
+                (
+                  infra_r2_bucket_bytes / clamp_min(infra_r2_soft_max_bytes, 1)
+                ) * 100
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 1800
+              to: 0
+            datasourceUid: __expr__
+            model:
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 1800
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [90]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 30m
+        annotations:
+          summary: R2 backup usage above 90% of soft cap
+          description: Free-tier guard soft cap is 8 GiB (of 10 GiB). Reduce R2_KEEP_LAST or delete old objects.
         labels:
           severity: warning
           layer: backup

@@ -10,7 +10,7 @@ Arquitetura: [STORAGE_ARCHITECTURE.md](STORAGE_ARCHITECTURE.md) · Oracle: [OCI_
 |--------|-----------|----------|-----------|
 | **1 Local** | `backup.sh` → `/opt/docker/backups/` | Rápido, restore granular | Mesmo disco/volume dos dados |
 | **2 Volume Backup OCI** | Snapshot Boot/Block (máx. 5 Always Free) | Sobrevive wipe do FS | Poucos pontos; restore de volume inteiro |
-| **3 Object Storage** | Upload futuro (hook stub) | Offsite (sobrevive à VM) | 20 GiB Always Free; **não implementado** |
+| **3 Cloudflare R2** | Hook `post-backup-r2` → bucket dedicado | Offsite (sobrevive à VM) | Free: **10 GB** storage; soft cap 8 GiB + keep 3 no script |
 
 ## Conteúdo (Camada 1)
 
@@ -76,15 +76,53 @@ Variáveis úteis:
 | `BACKUP_DIR` | auto | Override do diretório de saída |
 | `DATA_ROOT` | `/opt/docker` | Raiz persistente |
 
-## Hooks (Camada 3 futura)
+## Hooks (Camada 3 — Cloudflare R2)
+
+Upload automático do `.tar.gz` + `.sha256` + `.meta.json` após sucesso do Layer-1.
+
+Guardrails free-tier (não pagar overage):
+
+| Controle | Default | Efeito |
+|----------|---------|--------|
+| `R2_KEEP_LAST` | `3` | Mantém só 3 conjuntos remotos (~150 MB com tars ~50 MB) |
+| `R2_SOFT_MAX_BYTES` | `8589934592` (8 GiB) | Se o uso projetado passar, **pula** o upload (backup local segue OK) |
+| Frequência | cron diário | ~1 list + 3 puts + poucos deletes/dia ≪ 1M Class A |
+
+Ativar na VPS:
 
 ```bash
-cp scripts/backup/hooks/post-backup.sh.example scripts/backup/hooks/post-backup-oci.sh
-chmod +x scripts/backup/hooks/post-backup-oci.sh
-# Implementar upload; scripts executáveis em hooks/*.sh rodam após sucesso
+cp compose/backup-r2/.env.example compose/backup-r2/.env
+# Preencher R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET
+# Token: Cloudflare Dashboard → R2 → Manage R2 API Tokens → Object Read & Write (só este bucket)
+# Ativar alerta de billing/budget no Dashboard (mesmo com $0 esperado)
+
+sudo apt-get install -y awscli   # ou awscli v2; requer `aws` + `python3`
+cp scripts/backup/hooks/post-backup-r2.sh.example scripts/backup/hooks/post-backup-r2.sh
+chmod +x scripts/backup/hooks/post-backup-r2.sh
+make backup   # deve logar "R2 upload complete"
+# Emite marcadores .last-r2-success + .r2-usage; storage-textfile publica métricas R2.
+# Alertas Discord: R2BackupStale / R2BucketNearSoftCap — ver GRAFANA_ALERTING.md
 ```
 
-Cron de exemplo: [`scripts/backup/cron.example`](../scripts/backup/cron.example).
+Script: [`scripts/backup/r2-upload.sh`](../scripts/backup/r2-upload.sh). Env: [`compose/backup-r2/.env.example`](../compose/backup-r2/.env.example).
+
+Stub OCI antigo: [`scripts/backup/hooks/post-backup.sh.example`](../scripts/backup/hooks/post-backup.sh.example) (não usar junto com R2 no mesmo fluxo).
+
+## Cron (janela 01:00–05:00)
+
+Agendar **manualmente** na VPS a partir de [`scripts/backup/cron.example`](../scripts/backup/cron.example). Não instalar via CI.
+
+Horário alvo: **02:15 America/Sao_Paulo** (meio da janela de menor uso). Use `CRON_TZ` mesmo se o SO estiver em outro fuso (ex.: `America/Campo_Grande`). Defina `PATH` — o cron não herda o PATH do login, e sem `USER` o `backup.sh` antigo abortava (`set -u`).
+
+```cron
+CRON_TZ=America/Sao_Paulo
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+15 2 * * * cd /opt/infra && /usr/bin/env bash scripts/backup.sh >>/opt/docker/logs/backup-cron.log 2>&1
+*/5 * * * * cd /opt/infra && /usr/bin/env bash scripts/metrics/storage-textfile.sh
+```
+
+O hook R2 roda no mesmo job após o Layer-1. Conferir `/opt/docker/logs/backup-cron.log` na manhã seguinte (`Backup created` / `R2 upload complete`).
 
 ## Permissões
 

@@ -20,11 +20,12 @@ PARTIAL="${OUT_FILE}.$$"
 
 dir_bytes() {
   local path="$1"
+  local bytes=0
   if [[ -d "${path}" ]]; then
-    du -sb "${path}" 2>/dev/null | awk '{print $1}'
-  else
-    printf '0\n'
+    # pipefail: du may exit 1 on permission-denied leaves; keep metric emission going.
+    bytes="$(du -sb "${path}" 2>/dev/null | awk '{print $1}')" || true
   fi
+  printf '%s\n' "${bytes:-0}"
 }
 
 emit() {
@@ -60,7 +61,52 @@ mkdir -p "${OUT_DIR}" 2>/dev/null || sudo mkdir -p "${OUT_DIR}"
     ts=0
   fi
   printf 'infra_backup_last_success_timestamp_seconds %s\n' "${ts}"
+
+  # Layer-3 R2 (updated by r2-upload.sh; refreshed here from markers so scrape stays fresh)
+  r2_bytes=0
+  r2_objects=0
+  r2_soft_max=8589934592
+  r2_usage="${DATA_ROOT}/backups/full/.r2-usage"
+  if [[ -f "${r2_usage}" ]]; then
+    # shellcheck disable=SC1090
+    # file format: bytes=N / objects=N / soft_max=N
+    while IFS='=' read -r k v; do
+      case "${k}" in
+        bytes) r2_bytes="${v:-0}" ;;
+        objects) r2_objects="${v:-0}" ;;
+        soft_max) r2_soft_max="${v:-8589934592}" ;;
+      esac
+    done <"${r2_usage}"
+  fi
+  printf '# HELP infra_r2_bucket_bytes Approximate R2 backup prefix size in bytes\n'
+  printf '# TYPE infra_r2_bucket_bytes gauge\n'
+  printf 'infra_r2_bucket_bytes %s\n' "${r2_bytes}"
+  printf '# HELP infra_r2_object_count Approximate object count under R2 backup prefix\n'
+  printf '# TYPE infra_r2_object_count gauge\n'
+  printf 'infra_r2_object_count %s\n' "${r2_objects}"
+  printf '# HELP infra_r2_soft_max_bytes Soft storage cap (free-tier guard)\n'
+  printf '# TYPE infra_r2_soft_max_bytes gauge\n'
+  printf 'infra_r2_soft_max_bytes %s\n' "${r2_soft_max}"
+  printf '# HELP infra_r2_last_success_timestamp_seconds Unix time of last successful R2 upload\n'
+  printf '# TYPE infra_r2_last_success_timestamp_seconds gauge\n'
+  if [[ -e "${DATA_ROOT}/backups/full/.last-r2-success" ]]; then
+    r2_ts="$(stat -c %Y "${DATA_ROOT}/backups/full/.last-r2-success" 2>/dev/null || echo 0)"
+  else
+    r2_ts=0
+  fi
+  printf 'infra_r2_last_success_timestamp_seconds %s\n' "${r2_ts}"
+  printf '# HELP infra_r2_last_skip_timestamp_seconds Unix time of last R2 upload skip (soft cap)\n'
+  printf '# TYPE infra_r2_last_skip_timestamp_seconds gauge\n'
+  if [[ -e "${DATA_ROOT}/backups/full/.last-r2-skip" ]]; then
+    r2_skip_ts="$(stat -c %Y "${DATA_ROOT}/backups/full/.last-r2-skip" 2>/dev/null || echo 0)"
+  else
+    r2_skip_ts=0
+  fi
+  printf 'infra_r2_last_skip_timestamp_seconds %s\n' "${r2_skip_ts}"
 } >"${PARTIAL}"
 
-mv -f "${PARTIAL}" "${OUT_FILE}"
-chmod 644 "${OUT_FILE}" 2>/dev/null || true
+if ! mv -f "${PARTIAL}" "${OUT_FILE}" 2>/dev/null; then
+  sudo mv -f "${PARTIAL}" "${OUT_FILE}"
+  sudo chown "${USER:-ubuntu}:${USER:-ubuntu}" "${OUT_FILE}" 2>/dev/null || true
+fi
+chmod 644 "${OUT_FILE}" 2>/dev/null || sudo chmod 644 "${OUT_FILE}" || true

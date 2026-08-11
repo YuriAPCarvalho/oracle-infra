@@ -113,7 +113,8 @@ Preparada no repositorio (aplicar na VPS via runbook):
 
 - hierarquia `/opt/docker` (databases, object-storage, monitoring, platform, apps, backups);
 - docs Always Free / Block Volume / Object Storage;
-- backup em 3 camadas (local + Volume Backup OCI + hook Object Storage);
+- backup em 3 camadas (local + Volume Backup OCI + Cloudflare R2 offsite);
+
 - monitoramento Boot/Block + textfile + alertas Discord.
 
 Ver [STORAGE_ARCHITECTURE.md](docs/STORAGE_ARCHITECTURE.md), [OCI_STORAGE.md](docs/OCI_STORAGE.md), [runbooks/MIGRATE_TO_BLOCK_VOLUME.md](docs/runbooks/MIGRATE_TO_BLOCK_VOLUME.md).

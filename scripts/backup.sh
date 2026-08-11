@@ -230,7 +230,8 @@ main() {
   local backup_dir
   local data_root
   local data_archive_path
-  local original_user="${SUDO_USER:-${USER}}"
+  # Cron does not set USER; with set -u that aborted the 03:15 job.
+  local original_user="${SUDO_USER:-${USER:-${LOGNAME:-$(id -un)}}}"
   local original_group
   local project_dir
   local tar_args=()
@@ -305,7 +306,9 @@ main() {
   rm -f -- "${BACKUP_PARTIAL_FILE}" "${BACKUP_FILE}" "${checksum_file}" "${meta_file}"
 
   info "Creating backup ${BACKUP_FILE}"
-  # GNU tar exits 1 when a file changes while being read (common with live Traefik logs).
+  # GNU tar exits 1 when a file changes while being read (common with live Traefik/Grafana).
+  # With set -E, ERR still fires inside functions under set +e — clear the trap for this call.
+  trap - ERR
   set +e
   if [[ "${needs_privileged_tar}" == "true" ]]; then
     # Write partial as root then re-own
@@ -315,6 +318,7 @@ main() {
   fi
   tar_rc=$?
   set -e
+  trap 'backup_error "$?" "$LINENO"' ERR
   if [[ "${tar_rc}" -gt 1 ]]; then
     die "tar failed with exit code ${tar_rc}"
   fi

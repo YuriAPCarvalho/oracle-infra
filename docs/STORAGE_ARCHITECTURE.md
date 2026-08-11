@@ -12,7 +12,7 @@ Backup/restore: [BACKUP.md](BACKUP.md), [RESTORE.md](RESTORE.md).
 |--------|------|----------|
 | Boot Volume | `/`, `/opt/infra`, `/var/lib/docker` | SO, código versionado, engine Docker, staging opcional de upload |
 | Block Volume | `/opt/docker` | Dados persistentes de todos os containers |
-| Object Storage OCI | bucket `infra-backups` | Camada 3 de backup (offsite) — **upload futuro** |
+| Object Storage R2 | Cloudflare bucket `infra-backups` (ex.) | Camada 3 offsite — free 10 GB; soft cap 8 GiB + keep 3 |
 
 `DATA_ROOT` permanece `/opt/docker` ([`scripts/lib/common.sh`](../scripts/lib/common.sh)) para máxima compatibilidade com CI e scripts.
 
@@ -69,7 +69,7 @@ Lista canônica: [`scripts/lib/storage-layout.sh`](../scripts/lib/storage-layout
 
 1. **Camada 1 (local):** `make backup` → dumps lógicos + tar em `/opt/docker/backups/`.
 2. **Camada 2 (OCI Volume Backup):** snapshots manuais/policy do Boot e/ou Block (máx. 5 Always Free).
-3. **Camada 3 (Object Storage):** hook preparado; upload **não implementado** nesta fase.
+3. **Camada 3 (Cloudflare R2):** hook `post-backup-r2` → [`scripts/backup/r2-upload.sh`](../scripts/backup/r2-upload.sh); keep 3 + soft cap 8 GiB (free 10 GB).
 
 ## Fluxo de restore (resumo)
 
@@ -83,7 +83,7 @@ Dentro dos **200 GB** Boot+Block Always Free:
 
 1. Prune de `backups/full/` (retenção) e TSDB Prometheus.
 2. Reduzir boot (~50 GB) e expandir Block Volume (fase opcional, risco alto).
-3. Offload de dumps críticos para Object Storage (20 GB).
+3. Offload de dumps/archives críticos para R2 (≤10 GB free; script com soft cap 8 GiB).
 4. Upgrade pago consciente se media MinIO explodir.
 
 ## Segurança
@@ -103,7 +103,7 @@ Riscos: UID mismatch após migração; backup live inconsistente; Camada 1 no me
 - Node Exporter: uso de `/` e `/opt/docker`.
 - Textfile: tamanhos de backups/DBs/MinIO (`scripts/metrics/storage-textfile.sh`).
 - MinIO + Postgres exporters já existentes.
-- Object Storage: métricas OCI Console / CLI — ver [OCI_STORAGE.md](OCI_STORAGE.md).
+- Object Storage offsite: Cloudflare R2 Dashboard (usage) — ver [BACKUP.md](BACKUP.md) Camada 3. OCI Object Storage permanece opção documentada em [OCI_STORAGE.md](OCI_STORAGE.md).
 
 Alertas Discord via Grafana: [GRAFANA_ALERTING.md](GRAFANA_ALERTING.md).
 

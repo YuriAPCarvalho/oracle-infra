@@ -1,11 +1,21 @@
 # Example crontab entries for Layer-1 backup + storage textfile metrics.
 # Install manually on the VPS (do not auto-install from CI).
 #
-# Daily backup at 03:15 America/Sao_Paulo (adjust TZ / path):
-# 15 3 * * * cd /opt/infra && /usr/bin/env bash scripts/backup.sh >>/opt/docker/logs/backup-cron.log 2>&1
+# Low-traffic window: 01:00–05:00 America/Sao_Paulo.
+# VPS TZ may differ (e.g. America/Campo_Grande); CRON_TZ keeps the wall clock.
+#
+# CRON_TZ=America/Sao_Paulo
+# SHELL=/bin/bash
+# PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#
+# Layer-1 + hook R2 (same job; should finish well before 05:00):
+# 15 2 * * * cd /opt/infra && /usr/bin/env bash scripts/backup.sh >>/opt/docker/logs/backup-cron.log 2>&1
 #
 # Storage size metrics every 5 minutes (node_exporter textfile):
 # */5 * * * * cd /opt/infra && /usr/bin/env bash scripts/metrics/storage-textfile.sh
+#
+# Layer-3 R2 upload runs automatically via executable hook post-backup-r2.sh
+# (see compose/backup-r2/.env + docs/BACKUP.md). Keep free-tier caps in that env.
 #
 # Optional weekly reminder: create OCI Volume Backup of the Block Volume via Console
 # (max 5 Always Free volume backups across boot+block).

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Enable on the VPS:
+#   cp scripts/backup/hooks/post-backup-r2.sh.example scripts/backup/hooks/post-backup-r2.sh
+#   chmod +x scripts/backup/hooks/post-backup-r2.sh
+#   cp compose/backup-r2/.env.example compose/backup-r2/.env  # fill secrets
+#
+# Invoked by backup.sh after a successful Layer-1 archive (executable hooks only).
+
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+ENV_FILE="${BACKUP_R2_ENV:-${PROJECT_ROOT}/compose/backup-r2/.env}"
+
+if [[ -f "${ENV_FILE}" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "${ENV_FILE}"
+  set +a
+else
+  echo "WARN R2 hook: env file not found (${ENV_FILE}); skip upload" >&2
+  exit 0
+fi
+
+exec bash "${PROJECT_ROOT}/scripts/backup/r2-upload.sh"

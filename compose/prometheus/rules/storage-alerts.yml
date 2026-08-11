@@ -25,6 +25,44 @@ groups:
           summary: "No Layer-1 backup success marker"
           description: "infra_backup_last_success_timestamp_seconds is missing or zero. Run make backup and scripts/metrics/storage-textfile.sh."
 
+      - alert: R2BackupStale
+        expr: |
+          (
+            time() - infra_r2_last_success_timestamp_seconds
+          ) > 36 * 3600
+          and infra_r2_last_success_timestamp_seconds > 0
+        for: 15m
+        labels:
+          severity: warning
+          layer: backup
+        annotations:
+          summary: "Layer-3 R2 backup not successful for >36h"
+          description: "Last successful R2 upload marker is {{ $value | humanizeDuration }} old. Check post-backup-r2 hook and compose/backup-r2/.env."
+
+      - alert: R2BackupNeverSucceeded
+        expr: infra_r2_last_success_timestamp_seconds == 0 or absent(infra_r2_last_success_timestamp_seconds)
+        for: 2h
+        labels:
+          severity: warning
+          layer: backup
+        annotations:
+          summary: "No Layer-3 R2 backup success marker"
+          description: "infra_r2_last_success_timestamp_seconds is missing or zero. Enable post-backup-r2.sh and run make backup."
+
+      - alert: R2BucketNearSoftCap
+        expr: |
+          infra_r2_soft_max_bytes > 0
+          and (
+            infra_r2_bucket_bytes / infra_r2_soft_max_bytes
+          ) > 0.9
+        for: 30m
+        labels:
+          severity: warning
+          layer: backup
+        annotations:
+          summary: "R2 backup usage above 90% of soft cap"
+          description: "infra_r2_bucket_bytes is {{ $value | humanizePercentage }} of soft max. Reduce keep or free objects before hitting free-tier 10GiB."
+
       - alert: BackupsGrowthAbnormal
         expr: |
           (

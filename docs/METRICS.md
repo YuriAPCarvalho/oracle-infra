@@ -79,7 +79,7 @@ Node Exporter e cAdvisor não precisam de TSDB; textfile é gerado no host.
 bash scripts/metrics/storage-textfile.sh
 ```
 
-Métricas: `infra_storage_dir_bytes`, `infra_backup_last_success_timestamp_seconds`.
+Métricas: `infra_storage_dir_bytes`, `infra_backup_last_success_timestamp_seconds`, `infra_r2_last_success_timestamp_seconds`, `infra_r2_bucket_bytes`, `infra_r2_object_count`, `infra_r2_soft_max_bytes`, `infra_r2_last_skip_timestamp_seconds`.
 
 ### Object Storage OCI (Camada 3)
 

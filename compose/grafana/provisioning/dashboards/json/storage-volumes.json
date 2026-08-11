@@ -209,6 +209,82 @@
       "title": "Last Layer-1 backup success",
       "description": "From .last-success marker via textfile collector.",
       "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeAsIso",
+          "custom": { "fillOpacity": 0, "lineWidth": 2 }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+      "id": 9,
+      "targets": [
+        {
+          "expr": "infra_r2_last_success_timestamp_seconds * 1000",
+          "legendFormat": "last R2 success",
+          "refId": "A"
+        }
+      ],
+      "title": "Last Layer-3 R2 backup success",
+      "description": "From backups/full/.last-r2-success via storage-textfile.sh.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 10, "lineWidth": 2 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "soft max" },
+            "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 10] } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 12, "y": 22 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "infra_r2_bucket_bytes",
+          "legendFormat": "bucket bytes",
+          "refId": "A"
+        },
+        {
+          "expr": "infra_r2_soft_max_bytes",
+          "legendFormat": "soft max",
+          "refId": "B"
+        }
+      ],
+      "title": "R2 usage vs soft cap",
+      "description": "Approximate size under full/ prefix. Soft max defaults to 8 GiB (free tier 10 GiB).",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "fillOpacity": 10, "lineWidth": 2 }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 22 },
+      "id": 11,
+      "targets": [
+        {
+          "expr": "infra_r2_object_count",
+          "legendFormat": "objects",
+          "refId": "A"
+        }
+      ],
+      "title": "R2 object count",
+      "description": "Approx objects under full/ (3 files per backup set).",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",

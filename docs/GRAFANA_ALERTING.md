@@ -37,8 +37,11 @@ Se a variável não estiver no `.env`, o Compose usa um noop local (`http://127.
 
 ### Storage / backup (`storage-alerts.yml`)
 
-- `BackupStale` — marcador `.last-success` &gt; 36h
+- `BackupStale` — marcador `.last-success` &gt; 36h (Grafana: só se a métrica &gt; 0)
 - `BackupNeverSucceeded` — métrica ausente/zero
+- `R2BackupStale` — marcador `.last-r2-success` &gt; 36h (Camada 3; Grafana: só se a métrica &gt; 0)
+- `R2BackupNeverSucceeded` — métrica R2 ausente/zero
+- `R2BucketNearSoftCap` — `infra_r2_bucket_bytes` &gt; 90% do soft cap (default 8 GiB)
 - Crescimento anormal de `backups/full`, MinIO e Postgres (textfile `infra_storage_dir_bytes`)
 
 Requer cron de [`scripts/metrics/storage-textfile.sh`](../scripts/metrics/storage-textfile.sh). Dashboard: **Storage volumes**.
