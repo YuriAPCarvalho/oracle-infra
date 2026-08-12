@@ -181,9 +181,10 @@ bash scripts/discord-notify.sh --dry-run --title t --status started --service s
 |---------|------|
 | SSH host key mismatch | Atualizar `VPS_SSH_HOST_KEY` |
 | compose_dir rejected | Usar `compose/<svc>` relativo |
-| dirty working tree | Nao editar `/opt/infra` na VPS |
+| dirty working tree (manual) | Nao editar `/opt/infra` na VPS; commit no `oracle-infra` e faca pull |
+| dirty working tree (CI) | Com `GITHUB_SHA`, o script faz `fetch` + `reset --hard origin/<branch>` e descarta edits locais tracked |
 | lock timeout | Aguardar outro deploy; investigar processo |
-| packages 403 | Garantir job publish com `packages: write` |
+| packages 403 | Nao fazer `docker logout` entre deploys paralelos; garantir `packages: write/read` |
 
 ## Referencias
 

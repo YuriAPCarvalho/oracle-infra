@@ -333,7 +333,7 @@ jobs:
             -p "${VPS_SSH_PORT}" \
             "${VPS_USER}@${VPS_HOST}" \
             -- \
-            /bin/bash -c 'docker logout ghcr.io >/dev/null 2>&1 || true; /bin/rm -f "'"${config_remote}"'"' \
+            /bin/bash -c '/bin/rm -f "'"${config_remote}"'"' \
             || true
 
           rm -f "${config_local}"

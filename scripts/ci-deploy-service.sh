@@ -2,7 +2,9 @@
 #
 # ci-deploy-service.sh
 # Controlled single-service deploy for GitHub Actions over SSH.
-# Does not prune, remove volumes, reset git hard, or alter /opt/docker data permissions.
+# Does not prune, remove volumes, or alter /opt/docker data permissions.
+# Com GITHUB_SHA (CI): sincroniza /opt/infra com origin/<branch> via reset --hard
+# (VPS e mirror de deploy; edits locais em arquivos tracked sao descartados).
 #
 # Prefer --config FILE (KEY=VALUE) from the GHA runner to avoid remote shell injection.
 # Experimental until validated with a real application deploy.
@@ -324,15 +326,50 @@ ensure_clean_repo() {
   ok "Repository working tree is clean"
 }
 
-git_pull_ff_only() {
+# CI (GITHUB_SHA set): fetch + reset --hard origin/<branch>.
+# Manual/local: exige working tree limpa + pull --ff-only.
+sync_infra_repo() {
+  local branch remote_ref dirty
+
   if [[ "${SKIP_GIT_PULL}" -eq 1 ]]; then
-    info "Skipping git pull (--skip-git-pull)"
+    info "Skipping git sync (--skip-git-pull)"
     return 0
   fi
   if [[ "${DRY_RUN}" -eq 1 ]]; then
-    info "Dry-run: would run git pull --ff-only"
+    if [[ -n "${GITHUB_SHA}" ]]; then
+      info "Dry-run: would git fetch + reset --hard origin/<branch> (CI sync)"
+    else
+      info "Dry-run: would require clean tree + git pull --ff-only"
+    fi
     return 0
   fi
+
+  branch="$(git -C "${INFRA_ROOT}" rev-parse --abbrev-ref HEAD)"
+  if [[ -z "${branch}" || "${branch}" == "HEAD" ]]; then
+    die "Detached HEAD under ${INFRA_ROOT}; checkout a branch before deploy"
+  fi
+
+  info "git fetch origin"
+  git -C "${INFRA_ROOT}" fetch origin
+
+  remote_ref="origin/${branch}"
+  if ! git -C "${INFRA_ROOT}" rev-parse --verify --quiet "${remote_ref}^{commit}" >/dev/null; then
+    die "Missing remote ref ${remote_ref}"
+  fi
+
+  if [[ -n "${GITHUB_SHA}" ]]; then
+    dirty="$(git -C "${INFRA_ROOT}" status --porcelain)"
+    if [[ -n "${dirty}" ]]; then
+      warn "CI sync: discarding local tracked changes under ${INFRA_ROOT}"
+      printf '%s\n' "${dirty}" >&2
+    fi
+    info "git reset --hard ${remote_ref}"
+    git -C "${INFRA_ROOT}" reset --hard "${remote_ref}"
+    ok "Repository hard-synced to ${remote_ref}"
+    return 0
+  fi
+
+  ensure_clean_repo
   info "git pull --ff-only"
   git -C "${INFRA_ROOT}" pull --ff-only
   ok "Repository updated"
@@ -592,7 +629,7 @@ dry_run_checks() {
   kv "state_dir" "${STATE_DIR}"
   kv "rollback_possible" "$([[ -n "${PREVIOUS_IMAGE}" && "${PREVIOUS_IMAGE}" != "${NEW_IMAGE}" && "${ENABLE_ROLLBACK}" -eq 1 ]] && echo yes || echo no)"
 
-  ensure_clean_repo
+  sync_infra_repo
   validate_compose_only "${NEW_IMAGE}"
 
   if [[ -d "${DEPLOY_STATE_ROOT}" ]]; then
@@ -645,8 +682,7 @@ main() {
     exit 0
   fi
 
-  ensure_clean_repo
-  git_pull_ff_only
+  sync_infra_repo
 
   # Re-resolve after pull in case compose changed
   resolve_compose_path
