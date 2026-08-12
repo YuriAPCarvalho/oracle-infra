@@ -57,6 +57,8 @@ Origem: dashboards enxutos criados neste repositório (sem download dinâmico). 
 
 `container_fs_*` depende do cAdvisor; se ausente no overlayfs, o painel de filesystem de container pode ficar vazio — disco do host continua no dashboard Host.
 
+**Memory vs limit** usa o `mem_limit` do container quando existe; senão cai para a RAM do host. Sem esse fallback o painel fica No data — nenhum Compose desta VPS define limite de memória.
+
 ## Bootstrap
 
 ```bash

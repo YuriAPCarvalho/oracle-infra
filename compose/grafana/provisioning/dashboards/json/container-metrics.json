@@ -113,7 +113,7 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "description": "Only series with an explicit memory limit (unlimited containers are omitted).",
+      "description": "Working set as a fraction of the container memory limit when set; otherwise of host RAM (no Compose mem_limit on this VPS).",
       "fieldConfig": {
         "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "fillOpacity": 15, "lineWidth": 2 } },
         "overrides": []
@@ -122,7 +122,7 @@
       "id": 9,
       "targets": [
         {
-          "expr": "(sum by (name) (container_memory_working_set_bytes{name=~\".+\",name!=\"\"}) / clamp_min(sum by (name) (container_spec_memory_limit_bytes{name=~\".+\",name!=\"\"}), 1)) and on(name) ((sum by (name) (container_spec_memory_limit_bytes{name=~\".+\",name!=\"\"}) > 0) and (sum by (name) (container_spec_memory_limit_bytes{name=~\".+\",name!=\"\"}) < 1e15))",
+          "expr": "sum by (name) (container_memory_working_set_bytes{name=~\".+\",name!=\"\"}) / clamp_min(((sum by (name) (container_spec_memory_limit_bytes{name=~\".+\",name!=\"\"}) > 0) < 1e15) or (sum by (name) (container_memory_working_set_bytes{name=~\".+\",name!=\"\"}) * 0 + on() group_left() sum(node_memory_MemTotal_bytes)), 1)",
           "legendFormat": "{{name}}",
           "refId": "A"
         }
@@ -275,5 +275,5 @@
   "timezone": "browser",
   "title": "Container metrics",
   "uid": "oracle-container-metrics",
-  "version": 3
+  "version": 4
 }
