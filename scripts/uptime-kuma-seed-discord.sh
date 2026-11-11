@@ -34,7 +34,7 @@ else
   MONITOR_NAMES=(
     traefik portainer dozzle gold-api gold-admin
     chamaeu-api-health chamaeu-web chamaeu-adm
-    chamaeu-api-internal chamaeu-waha-server chamaeu-waha-session
+    chamaeu-api-internal chamaeu-api-health-deep chamaeu-waha-server chamaeu-waha-session
     chamaeu-api-tls chamaeu-web-tls chamaeu-adm-tls
     minio-health minio-s3-public
   )

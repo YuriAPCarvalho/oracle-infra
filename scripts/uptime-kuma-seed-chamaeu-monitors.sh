@@ -163,6 +163,10 @@ seed_chamaeu_monitors() {
   # P1 — Docker origin (proxy network)
   insert_http_monitor "chamaeu-api-internal" \
     "http://rankao-api:3000/health" 0 60 3 '"status":"ok"' "" 10 0
+  # Mensageria profunda (fila + WAHA + flags). Se HEALTH_DEEP_TOKEN estiver setado na API,
+  # configure o header X-Health-Token no monitor via UI Kuma após o seed.
+  insert_http_monitor "chamaeu-api-health-deep" \
+    "http://rankao-api:3000/health/deep" 0 120 3 '"whatsappReady":true' "" 15 0
   insert_http_monitor "chamaeu-web-internal" "http://rankao-web:3000/" 0 120 3 "" "" 15 0
   insert_http_monitor "chamaeu-adm-internal" "http://rankao-adm:3000/" 0 120 3 "" "" 15 0
 

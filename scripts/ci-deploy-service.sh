@@ -469,6 +469,28 @@ validate_compose_only() {
   )
 }
 
+persist_service_image() {
+  local image_ref="$1"
+  local env_file="${COMPOSE_DIR}/.env"
+  local tmp_env
+
+  if [[ ! -f "${env_file}" ]]; then
+    warn "Compose env ausente (${env_file}); SERVICE_IMAGE só vale nesta execução"
+    return 0
+  fi
+
+  tmp_env="$(mktemp "${COMPOSE_DIR}/.env.XXXXXX")"
+  if grep -q '^SERVICE_IMAGE=' "${env_file}"; then
+    sed "s|^SERVICE_IMAGE=.*|SERVICE_IMAGE=${image_ref}|" "${env_file}" >"${tmp_env}"
+  else
+    cat "${env_file}" >"${tmp_env}"
+    printf '\nSERVICE_IMAGE=%s\n' "${image_ref}" >>"${tmp_env}"
+  fi
+  chmod --reference="${env_file}" "${tmp_env}" 2>/dev/null || chmod 600 "${tmp_env}"
+  mv -f "${tmp_env}" "${env_file}"
+  ok "Persisted SERVICE_IMAGE=${image_ref} in ${env_file}"
+}
+
 apply_compose() {
   local image_ref="$1"
 
@@ -485,6 +507,8 @@ apply_compose() {
     fail "docker pull failed for ${image_ref}"
     return 1
   fi
+
+  persist_service_image "${image_ref}"
 
   info "Applying compose up -d"
   (

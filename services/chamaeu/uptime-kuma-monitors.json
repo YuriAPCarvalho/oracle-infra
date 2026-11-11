@@ -75,6 +75,18 @@
       "accepted_statuscodes": ["200-299"]
     },
     {
+      "name": "chamaeu-api-health-deep",
+      "type": "http",
+      "url": "http://rankao-api:3000/health/deep",
+      "interval": 120,
+      "maxretries": 3,
+      "timeout": 15,
+      "keyword": "\"whatsappReady\":true",
+      "expiry_notification": false,
+      "accepted_statuscodes": ["200-299"],
+      "notes": "If HEALTH_DEEP_TOKEN is set on API, add header X-Health-Token in Kuma UI"
+    },
+    {
       "name": "chamaeu-web-internal",
       "type": "http",
       "url": "http://rankao-web:3000/",
