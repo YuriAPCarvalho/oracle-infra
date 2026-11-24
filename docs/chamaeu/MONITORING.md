@@ -165,12 +165,38 @@ Túnel SSH → painel Dozzle — filtrar `rankao-api`, `waha`, `redis`.
 
 ## Runbook — WhatsApp / sessão
 
-1. Kuma `chamaeu-waha-session` ou Discord mensageria “Sessão WAHA crítica” → ADM **Mensageria → Reiniciar sessão / QR**
-2. `docker logs waha --tail 100` e `docker logs rankao-api --tail 200` (eventos `waha.webhook.session_status`, `notification.job.failed`)
-3. Session status: `curl -H "X-Api-Key: $WAHA_API_KEY" http://waha:3000/api/sessions` (rede Docker / exec)
-4. Saúde profunda: `curl -sS http://rankao-api:3000/health/deep` — checar `queue.waiting` / `waha.status` / `dispararWhatsApp`
-5. Confirmar kill-switch `DISPARAR_NOTIFICACAO_WHATSAPP=true` e template `RAQUETEIRA_COBRANCA` ativo no ADM
-6. Re-parear QR se status ≠ `WORKING` ([`services/chamaeu/README.md`](../../services/chamaeu/README.md))
+Ordem de recuperação (não apague credenciais de primeira):
+
+| Sintoma / reason | Ação |
+|------------------|------|
+| Queda curta / `STARTING` breve | Esperar reconexão automática do GOWS |
+| `FAILED` / `STOPPED` sem `LoggedOut` | Soft restart: ADM **Reconectar (soft restart)** ou `POST /api/sessions/{name}/restart` |
+| `ClientOutdated` (405) nos logs WAHA | Atualizar imagem `devlikeapro/waha:gows` (`cd compose/waha && docker compose pull && docker compose up -d`), depois soft restart |
+| `TemporaryBan` | Esperar `Expire`; só então soft restart (re-parear não resolve) |
+| `LoggedOut` / 403 primary device gone | ADM **Forçar novo QR** (delete+create) e escanear |
+| Soft restart não volta a `WORKING` | Só então forçar novo QR |
+
+Passos de diagnóstico:
+
+1. Kuma `chamaeu-waha-session` / Discord mensageria / Sentry (`waha_status`, `waha_reason`) → ADM Mensageria
+2. `docker logs waha --tail 100` — procurar `Client outdated`, `LoggedOut`, `primary device`, `TemporaryBan`
+3. `docker logs rankao-api --tail 200` — `waha.webhook.session_status`, `mensageria.health`, `notification.job.failed`
+4. Session status: `curl -H "X-Api-Key: $WAHA_API_KEY" http://waha:3000/api/sessions` (rede Docker / exec)
+5. Saúde profunda: `curl -sS http://rankao-api:3000/health/deep` — `queue.*` / `waha.status` / `dispararWhatsApp`
+6. Confirmar `DISPARAR_NOTIFICACAO_WHATSAPP=true`, `WAHA_WEBHOOK_URL=http://rankao-api:3000/notificacoes/waha/webhook` e template `RAQUETEIRA_COBRANCA` ativo
+7. Backup do volume antes de wipe: `/opt/docker/applications/waha/sessions`
+
+### Atualização da imagem WAHA (mensal ou ao ver 405)
+
+```bash
+cd /opt/infra/compose/waha
+# opcional: tar backup de sessions
+docker compose pull
+docker compose up -d --force-recreate
+docker logs waha --tail 50   # Environment version / engine GOWS
+```
+
+Após pull, se a sessão já tinha credenciais válidas, o WAHA costuma restaurar sozinho (`WAHA_WORKER_RESTART_SESSIONS`). Se ficar `FAILED`, soft restart; se `LoggedOut`/wipe, novo QR.
 
 ## Backup
 
